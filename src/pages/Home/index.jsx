@@ -54,18 +54,18 @@ const OfficialNoticeBar = () => {
 
 // 2. News-Led Hero Section (Neutralized)
 const HeroSection = () => (
-  <section className="relative bg-gov-navy-900 text-white overflow-hidden">
+  <section data-no-reveal className="relative bg-gov-navy-900 text-white overflow-hidden">
     <div className="absolute inset-0 opacity-40">
       <img 
         src="/images/hero/hero1.jpg" 
         alt="ESLGSC Complex" 
-        className="w-full h-full object-cover"
+        className="kenburns w-full h-full object-cover"
       />
       <div className="absolute inset-0 bg-gradient-to-t from-gov-navy-900/80 via-gov-navy-900/20 to-transparent" />
     </div>
 
     <div className="relative container-custom py-20 md:py-32">
-      <div className="max-w-3xl space-y-8">
+      <div className="hero-rise max-w-3xl space-y-8">
         <div className="space-y-4">
           <div className="flex items-center gap-3">
             <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-gov-cyan-400">

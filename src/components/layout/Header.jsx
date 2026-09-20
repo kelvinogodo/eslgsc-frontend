@@ -1,9 +1,9 @@
 import { useState, useEffect, Fragment } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, Transition } from '@headlessui/react';
-import { Bars3Icon, XMarkIcon, ChevronDownIcon, EnvelopeIcon, PhoneIcon, ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline';
+import { motion, useScroll, useSpring } from 'framer-motion';
+import { Bars3Icon, XMarkIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import clsx from 'clsx';
-import Button from '../ui/Button';
 
 const navigation = [
   { name: 'Home', href: '/' },
@@ -49,6 +49,13 @@ const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
+  const { scrollYProgress } = useScroll();
+  const progress = useSpring(scrollYProgress, { stiffness: 120, damping: 24, mass: 0.3 });
+
+  // close the mobile menu whenever the page changes
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -72,36 +79,12 @@ const Header = () => {
       role="banner"
       className={clsx(
         'fixed top-0 left-0 right-0 z-40 transition-all duration-300',
-        scrolled 
-          ? 'bg-white shadow-lg' 
+        scrolled
+          ? 'bg-white/90 shadow-lg shadow-gov-navy-900/5 backdrop-blur-md'
           : 'bg-white'
       )}
     >
-      {/* Top Utility Bar */}
-      <div className="bg-gov-navy-700 text-white py-2 hidden md:block">
-        <div className="container-custom flex justify-between items-center text-xs font-medium">
-          <div className="flex items-center space-x-6">
-            <a href="mailto:ebonyistatelgsc@gmail.com" className="flex items-center hover:text-gov-cyan-300 transition-colors">
-              <EnvelopeIcon className="w-4 h-4 mr-2" />
-              ebonyistatelgsc@gmail.com
-            </a>
-            <span className="flex items-center">
-              <PhoneIcon className="w-4 h-4 mr-2" />
-              +234 (0) 803 555 0101
-            </span>
-          </div>
-          <div className="flex items-center space-x-4">
-            <Link
-              to="/login"
-              className="inline-flex items-center gap-1.5 rounded-full bg-gov-cyan-500 px-3.5 py-1 text-[0.72rem] font-bold uppercase tracking-wide text-gov-navy-900 shadow-sm transition-colors hover:bg-gov-cyan-400"
-            >
-              <ArrowRightOnRectangleIcon className="h-3.5 w-3.5" aria-hidden="true" />
-              Staff sign in
-            </Link>
-          </div>
-        </div>
-      </div>
-  <nav role="navigation" aria-label="Primary navigation" className="container-custom py-2">
+      <nav role="navigation" aria-label="Primary navigation" className="container-custom py-2">
         <div className="flex items-center justify-between">
           {/* Logo */}
                     <Link to="/" className="flex items-center gap-3" aria-label="ESLGSC home">
@@ -134,8 +117,8 @@ const Header = () => {
               className={clsx(
                         'px-4 py-2 text-sm font-medium rounded-md transition-colors inline-flex items-center space-x-1',
                         childIsActive
-                          ? 'text-white bg-gov-navy-900 shadow-sm'
-                          : 'text-gov-gray-700 hover:text-gov-navy-700 hover:bg-gov-gray-50'
+                          ? 'text-brand-800 bg-brand-50 ring-1 ring-brand-100'
+                          : 'text-gov-gray-700 hover:text-brand-700 hover:bg-brand-50/60'
                       )}
                     >
                       <span>{item.name}</span>
@@ -163,7 +146,7 @@ const Header = () => {
                                   className={clsx(
                                     'block px-4 py-2 text-sm transition-colors',
                                     active || isCurrent
-                                      ? 'bg-gov-navy-900 text-white shadow-sm'
+                                      ? 'bg-brand-50 text-brand-800'
                                       : 'text-gov-gray-700'
                                   )}
                                 >
@@ -190,8 +173,8 @@ const Header = () => {
                   className={clsx(
                     'px-4 py-2 text-sm font-medium rounded-md transition-colors',
                     isCurrent
-                      ? 'text-white bg-gov-navy-900 shadow-sm'
-                      : 'text-gov-gray-700 hover:text-gov-navy-700 hover:bg-gov-gray-50'
+                      ? 'text-brand-800 bg-brand-50 ring-1 ring-brand-100'
+                      : 'text-gov-gray-700 hover:text-brand-700 hover:bg-brand-50/60'
                   )}
                 >
                   {item.name}
@@ -219,6 +202,9 @@ const Header = () => {
           </div>
         </div>
       </nav>
+
+      {/* Reading progress */}
+      <motion.div aria-hidden="true" style={{ scaleX: progress }} className="absolute inset-x-0 bottom-0 h-[3px] origin-left bg-gradient-to-r from-brand-600 via-gold-400 to-gold-300" />
 
       {/* Mobile Menu */}
       <Transition
@@ -255,7 +241,7 @@ const Header = () => {
                                 className={clsx(
                                   'block px-4 py-2 text-sm rounded-md transition-colors',
                                   location.pathname.startsWith(child.href)
-                                    ? 'bg-gov-navy-900 text-white'
+                                    ? 'bg-brand-50 text-brand-800'
                                     : 'text-gov-gray-600 hover:text-gov-navy-700 hover:bg-gov-gray-50'
                                 )}
                               >
@@ -275,7 +261,7 @@ const Header = () => {
                     className={clsx(
                       'block px-4 py-2 text-sm font-medium rounded-md transition-colors',
                       location.pathname === item.href
-                        ? 'bg-gov-navy-900 text-white shadow-sm'
+                        ? 'bg-brand-50 text-brand-800'
                         : 'text-gov-gray-700 hover:bg-gov-gray-50'
                     )}
                   >
@@ -284,7 +270,7 @@ const Header = () => {
                 )}
               </div>
             ))}
-            <div className="pt-4 mt-4 border-t border-gov-gray-100 md:hidden">
+            <div className="pt-4 mt-4 border-t border-gov-gray-100">
               <Link
                 to="/login"
                 onClick={() => setMobileMenuOpen(false)}

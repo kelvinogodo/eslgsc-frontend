@@ -65,7 +65,7 @@ const NewsPage = () => {
   if (newsArticles.length === 0) {
     return (
       <div className="pb-20">
-        <header className="bg-gov-navy-900 text-white pt-10 pb-8 md:pt-12 md:pb-10 border-b-4 border-gov-cyan-500">
+        <header className="page-banner bg-gov-navy-900 text-white pt-10 pb-8 md:pt-12 md:pb-10 border-b-4 border-gov-cyan-500">
           <div className="container-custom max-w-4xl">
             <h1 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">Newsroom</h1>
             <p className="text-xl text-white/80 leading-relaxed">
@@ -87,7 +87,7 @@ const NewsPage = () => {
   return (
     <div className="pb-20 bg-gov-gray-50/30">
       {/* Newsroom Masthead */}
-      <header className="bg-gov-navy-900 text-white pt-10 pb-8 md:pt-12 md:pb-10 border-b-4 border-gov-cyan-500 relative overflow-hidden">
+      <header className="page-banner bg-gov-navy-900 text-white pt-10 pb-8 md:pt-12 md:pb-10 border-b-4 border-gov-cyan-500 relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('/images/logo/logo.png')] bg-no-repeat bg-right-top opacity-5 grayscale pointer-events-none translate-x-1/4 -translate-y-1/4 scale-150" />
         <div className="container-custom relative z-10">
           <div className="max-w-3xl space-y-4">

@@ -57,7 +57,7 @@ const Contact = () => {
   return (
     <div className="bg-gov-gray-50/30 min-h-screen pb-20">
       {/* Institutional Masthead */}
-      <header className="bg-gov-navy-900 text-white pt-10 pb-8 md:pt-12 md:pb-10 border-b-4 border-gov-cyan-500 relative overflow-hidden">
+      <header className="page-banner bg-gov-navy-900 text-white pt-10 pb-8 md:pt-12 md:pb-10 border-b-4 border-gov-cyan-500 relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('/images/logo/logo.png')] bg-no-repeat bg-right-top opacity-5 grayscale pointer-events-none translate-x-1/4 -translate-y-1/4 scale-150" />
         <div className="container-custom relative z-10">
           <div className="max-w-3xl space-y-4">
