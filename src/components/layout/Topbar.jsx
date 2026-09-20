@@ -14,6 +14,7 @@ import {
 import clsx from 'clsx';
 import useAuth from '../../context/useAuth';
 import Avatar from '../portal/Avatar';
+import { useRetirementSummary } from '../../hooks/useRetirementSummary';
 import { getDashboardNotifications } from '../../services/dashboardService';
 import { getPageMeta, ROLE_LABELS } from '../../lib/navigation';
 
@@ -36,8 +37,17 @@ const Topbar = ({ onMenu }) => {
     enabled: ['SUPER_ADMIN', 'ADMIN', 'AUDIT', 'MEDIA_ADMIN'].includes(user?.role)
   });
 
+  const { data: retire } = useRetirementSummary(user?.role);
+
   const notifications = useMemo(() => {
     const items = [];
+    if (retire?.upcoming) {
+      items.push({
+        id: 'retirements',
+        message: `${retire.upcoming} staff retiring in the next 4 months`,
+        link: '/dashboard/retirements'
+      });
+    }
     if (metrics?.pendingAudits && ['SUPER_ADMIN', 'ADMIN', 'AUDIT'].includes(user?.role)) {
       items.push({
         id: 'pending-audits',
@@ -46,7 +56,7 @@ const Topbar = ({ onMenu }) => {
       });
     }
     return items;
-  }, [metrics, user?.role]);
+  }, [metrics, retire, user?.role]);
 
   return (
     <header className="fixed inset-x-0 top-0 z-30 h-16 border-b border-ink-100 bg-white/85 backdrop-blur-xl lg:left-72">

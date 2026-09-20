@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowRightOnRectangleIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import clsx from 'clsx';
 import useAuth from '../../context/useAuth';
+import { useRetirementSummary } from '../../hooks/useRetirementSummary';
 import { getDashboardNotifications } from '../../services/dashboardService';
 import { navForRole, ROLE_LABELS } from '../../lib/navigation';
 import Logo from '../portal/Logo';
@@ -60,6 +61,7 @@ const NavItem = ({ item, badge, onNavigate }) => {
 const SidebarBody = ({ onNavigate }) => {
   const { user, logout } = useAuth();
   const groups = navForRole(user?.role);
+  const { data: retire } = useRetirementSummary(user?.role);
 
   const { data: counts } = useQuery({
     queryKey: ['dashboard', 'notifications'],
@@ -84,7 +86,7 @@ const SidebarBody = ({ onNavigate }) => {
             )}
             <div className="space-y-1">
               {group.items.map((item) => (
-                <NavItem key={item.href} item={item} badge={item.badge ? counts?.[item.badge] : 0} onNavigate={onNavigate} />
+                <NavItem key={item.href} item={item} badge={item.badge ? ({ ...counts, retiring: retire?.upcoming })[item.badge] : 0} onNavigate={onNavigate} />
               ))}
             </div>
           </div>

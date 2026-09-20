@@ -52,6 +52,7 @@ export const NAV_GROUPS = [
     label: 'People',
     items: [
       { name: 'Staff Records', href: '/dashboard/employees', icon: IdentificationIcon, roles: ['SUPER_ADMIN', 'ADMIN', 'LGA'], description: 'Browse enrolled staff' },
+      { name: 'Upcoming Retirements', href: '/dashboard/retirements', icon: ClockIcon, roles: ['SUPER_ADMIN', 'ADMIN'], badge: 'retiring', description: 'Staff retiring in the next 4 months' },
       { name: 'Portal Users', href: '/dashboard/admin/users', icon: UsersIcon, roles: ['SUPER_ADMIN'], description: 'Manage who can sign in' },
       { name: 'Invite Someone', href: '/dashboard/admin/invite', icon: UserPlusIcon, roles: ['SUPER_ADMIN'], description: 'Send a sign-up invitation' }
     ]

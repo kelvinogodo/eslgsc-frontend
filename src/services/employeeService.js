@@ -33,3 +33,18 @@ export const getEmployeeFilterOptions = async () => {
 };
 
 export default { getEmployees, getEmployeeByEmployeeId, getEmployeeFilterOptions };
+
+/**
+ * Staff retiring within the next `months` months (admins only).
+ * @returns {Promise<{data: Array, meta: {months:number,total:number,overdue:number}}>}
+ */
+export const getUpcomingRetirements = async (months = 4) => {
+  const res = await api.get('/employees/retirements/upcoming', { params: { months } });
+  return res.data ?? { data: [], meta: { months, total: 0, overdue: 0 } };
+};
+
+/** Just the count for the notification bell. */
+export const getRetirementSummary = async () => {
+  const res = await api.get('/employees/retirements/summary');
+  return res.data ?? { upcoming: 0, nextDate: null };
+};
