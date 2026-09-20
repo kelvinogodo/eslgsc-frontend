@@ -105,7 +105,7 @@ const Footer = () => {
             &copy; {currentYear} Ebonyi State Local Government Service Commission. 
           </p>
           <div className="flex items-center space-x-6">
-            <Link to="/login" className="text-gov-cyan-500 font-semibold hover:text-gov-cyan-400">Staff Portal</Link>
+            <Link to="/login" className="text-gov-cyan-500 font-semibold hover:text-gov-cyan-400">Staff sign in</Link>
           </div>
         </div>
       </div>

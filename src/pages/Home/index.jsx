@@ -97,12 +97,12 @@ const HeroSection = () => (
 // 3. Quick Access Panel
 const QuickAccessPanel = () => {
   const links = [
-    { icon: DocumentTextIcon, title: 'Official Circulars', href: '/news-and-updates', color: 'text-blue-600' },
-    { icon: BellIcon, title: 'Public Notices', href: '/news-and-updates', color: 'text-orange-600' },
-    { icon: ChatBubbleLeftRightIcon, title: 'Complaints Desk', href: '/complaints', color: 'text-green-600' },
-    { icon: MapIcon, title: 'LGA Directory', href: '/local-governments', color: 'text-purple-600' },
-    { icon: AcademicCapIcon, title: 'Advocacy', href: '/about', color: 'text-red-600' },
-    { icon: NewspaperIcon, title: 'Press Releases', href: '/news-and-updates', color: 'text-cyan-600' },
+    { icon: DocumentTextIcon, title: 'Official Circulars', href: '/news-and-updates', color: 'text-brand-600' },
+    { icon: BellIcon, title: 'Public Notices', href: '/news-and-updates', color: 'text-brand-600' },
+    { icon: ChatBubbleLeftRightIcon, title: 'Complaints Desk', href: '/complaints', color: 'text-brand-600' },
+    { icon: MapIcon, title: 'LGA Directory', href: '/local-governments', color: 'text-brand-600' },
+    { icon: AcademicCapIcon, title: 'Advocacy', href: '/about', color: 'text-brand-600' },
+    { icon: NewspaperIcon, title: 'Press Releases', href: '/news-and-updates', color: 'text-brand-600' },
   ];
 
   return (
@@ -113,7 +113,7 @@ const QuickAccessPanel = () => {
             <Link 
               key={link.title}
               to={link.href}
-              className="group bg-white p-6 rounded-xl shadow-md border border-gov-gray-200 hover:border-gov-navy-300 hover:shadow-lg transition-all text-center"
+              className="group bg-white p-6 rounded-xl shadow-md border border-gov-gray-200 hover:border-gold-400 hover:shadow-lg hover:-translate-y-0.5 transition-all text-center"
             >
               <link.icon className={`w-8 h-8 mx-auto mb-3 transition-transform group-hover:scale-110 ${link.color}`} />
               <span className="text-sm font-bold text-gov-gray-900 group-hover:text-gov-navy-700 uppercase tracking-tight leading-tight block">
@@ -134,6 +134,9 @@ const NewsGrid = () => {
     queryFn: () => getPublishedNews({ limit: 3 }),
     retry: 1
   });
+
+  // Nothing published yet (or the API is unreachable): show no block at all rather than an empty box.
+  if (!isLoading && (isError || newsArticles.length === 0)) return null;
 
   return (
     <section className="py-20 bg-white">
@@ -278,6 +281,42 @@ const DocumentArchive = () => (
   </section>
 );
 
+// 5b. Public Service Desk — shown while there are no official documents to list
+const ServiceDesk = () => {
+  const items = [
+    { icon: ChatBubbleLeftRightIcon, title: 'Submit a complaint', text: 'Report a concern about service delivery or administrative conduct. Every submission is logged and reviewed.', to: '/complaints', cta: 'Open the complaints desk' },
+    { icon: MapIcon, title: 'Find your local government', text: 'Browse all 13 local government areas, their headquarters and development centres.', to: '/local-governments', cta: 'Open the LGA directory' },
+    { icon: InformationCircleIcon, title: 'Get answers quickly', text: 'Read the most common questions about recruitment, promotion and the Commission’s work.', to: '/faq', cta: 'Read the FAQ' }
+  ];
+
+  return (
+    <section className="py-20 bg-gov-gray-50">
+      <div className="container-custom space-y-10">
+        <div className="max-w-2xl space-y-3">
+          <h2 className="heading-lg">How can we help?</h2>
+          <p className="text-gov-gray-600 leading-relaxed">
+            The Commission serves the public and local government staff across Ebonyi State. Start with what you need.
+          </p>
+        </div>
+        <div className="grid gap-6 md:grid-cols-3">
+          {items.map(({ icon: Icon, title, text, to, cta }) => (
+            <Link key={title} to={to} className="group flex flex-col rounded-2xl border border-gov-gray-200 bg-white p-7 shadow-sm transition-all hover:-translate-y-1 hover:border-gold-400 hover:shadow-lg">
+              <span className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-brand-50 text-brand-700 transition-colors group-hover:bg-gold-400 group-hover:text-gov-navy-900">
+                <Icon className="h-6 w-6" aria-hidden="true" />
+              </span>
+              <h3 className="text-lg font-bold text-gov-navy-900">{title}</h3>
+              <p className="mt-2 flex-1 text-sm leading-relaxed text-gov-gray-600">{text}</p>
+              <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-bold text-brand-700">
+                {cta} <ArrowRightIcon className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
+              </span>
+            </Link>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
 // 6. About Section
 const AboutSection = () => (
   <section className="py-24 bg-white">
@@ -340,7 +379,7 @@ const Home = () => {
 
       <NewsGrid />
 
-      <DocumentArchive />
+      {OFFICIAL_CIRCULARS && OFFICIAL_CIRCULARS.length > 0 ? <DocumentArchive /> : <ServiceDesk />}
 
       <AboutSection />
 

@@ -1,7 +1,7 @@
 import { useState, useEffect, Fragment } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, Transition } from '@headlessui/react';
-import { Bars3Icon, XMarkIcon, ChevronDownIcon, EnvelopeIcon, PhoneIcon } from '@heroicons/react/24/outline';
+import { Bars3Icon, XMarkIcon, ChevronDownIcon, EnvelopeIcon, PhoneIcon, ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline';
 import clsx from 'clsx';
 import Button from '../ui/Button';
 
@@ -91,26 +91,30 @@ const Header = () => {
             </span>
           </div>
           <div className="flex items-center space-x-4">
-            <Link to="/login" className="hover:text-gov-cyan-300 transition-colors">
-              Staff Portal
+            <Link
+              to="/login"
+              className="inline-flex items-center gap-1.5 rounded-full bg-gov-cyan-500 px-3.5 py-1 text-[0.72rem] font-bold uppercase tracking-wide text-gov-navy-900 shadow-sm transition-colors hover:bg-gov-cyan-400"
+            >
+              <ArrowRightOnRectangleIcon className="h-3.5 w-3.5" aria-hidden="true" />
+              Staff sign in
             </Link>
           </div>
         </div>
       </div>
-  <nav role="navigation" aria-label="Primary navigation" className="container-custom py-4">
+  <nav role="navigation" aria-label="Primary navigation" className="container-custom py-2">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-3">
-            <img 
-              src="/images/logo/logo.png" 
-              alt="ESLGSC Logo" 
-              className="h-10 w-10 object-contain"
+                    <Link to="/" className="flex items-center gap-3" aria-label="ESLGSC home">
+            <img
+              src="/images/logo/logo.png"
+              alt="Ebonyi State seal"
+              className="h-14 w-14 shrink-0 object-contain"
             />
-            <div className="hidden sm:block">
-              <div className="text-lg font-bold text-gov-navy-900 leading-tight">
+            <div>
+              <div className="text-xl font-extrabold text-gov-navy-900 leading-tight tracking-tight">
                 ESLGSC
               </div>
-              <div className="text-xs text-gov-gray-600">
+              <div className="hidden text-xs text-gov-gray-600 sm:block">
                 Ebonyi State LG Service Commission
               </div>
             </div>
@@ -197,6 +201,9 @@ const Header = () => {
           </div>
 
           <div className="flex items-center space-x-4">
+            <Link to="/login" className="btn btn-primary btn-md hidden lg:inline-flex">
+              Staff sign in
+            </Link>
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
@@ -281,9 +288,9 @@ const Header = () => {
               <Link
                 to="/login"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block px-4 py-3 text-center text-sm font-semibold text-white bg-gov-navy-600 rounded-md hover:bg-gov-navy-700 transition-colors"
+                className="block px-4 py-3 text-center text-sm font-semibold text-white bg-brand-600 rounded-md hover:bg-brand-700 transition-colors"
               >
-                Staff Portal
+                Staff sign in
               </Link>
             </div>
           </div>

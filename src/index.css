@@ -4,29 +4,29 @@
 @theme {
   --font-sans: "Montserrat", "Open Sans", "Lato", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 
-  /* Official Navy */
-  --color-gov-navy-50:  #e6e9f0;
-  --color-gov-navy-100: #ccd3e1;
-  --color-gov-navy-200: #99a7c3;
-  --color-gov-navy-300: #667ba5;
-  --color-gov-navy-400: #334f87;
-  --color-gov-navy-500: #002369;
-  --color-gov-navy-600: #001c54;
-  --color-gov-navy-700: #00153f;
-  --color-gov-navy-800: #000e2a;
-  --color-gov-navy-900: #000715;
+  /* Deep forest (was navy) */
+  --color-gov-navy-50:  #f2f6f4;
+  --color-gov-navy-100: #e1eae6;
+  --color-gov-navy-200: #c3d4cd;
+  --color-gov-navy-300: #93b0a5;
+  --color-gov-navy-400: #5f8779;
+  --color-gov-navy-500: #3d6a5a;
+  --color-gov-navy-600: #2c5245;
+  --color-gov-navy-700: #22413a;
+  --color-gov-navy-800: #17302a;
+  --color-gov-navy-900: #0d1f1b;
 
-  /* Blues */
-  --color-gov-blue-50:  #f2f7fc;
-  --color-gov-blue-100: #e4eef8;
-  --color-gov-blue-200: #c7def1;
-  --color-gov-blue-300: #9ec6e6;
-  --color-gov-blue-400: #6ea8d8;
-  --color-gov-blue-500: #3d8ac7;
-  --color-gov-blue-600: #2d6fa5;
-  --color-gov-blue-700: #23577f;
-  --color-gov-blue-800: #1b425f;
-  --color-gov-blue-900: #142d40;
+  /* Emerald (was blue) */
+  --color-gov-blue-50:  #effbf3;
+  --color-gov-blue-100: #d7f5e1;
+  --color-gov-blue-200: #b0eac5;
+  --color-gov-blue-300: #7ad9a1;
+  --color-gov-blue-400: #3fc07a;
+  --color-gov-blue-500: #1fa35a;
+  --color-gov-blue-600: #168448;
+  --color-gov-blue-700: #13683b;
+  --color-gov-blue-800: #115231;
+  --color-gov-blue-900: #0d3f27;
 
   /* Greens */
   --color-gov-green-50:  #f3faf5;
@@ -40,11 +40,12 @@
   --color-gov-green-800: #1d4b2c;
   --color-gov-green-900: #12301c;
 
-  /* Cyan Accent */
-  --color-gov-cyan-100: #e0f7fa;
-  --color-gov-cyan-300: #80deea;
-  --color-gov-cyan-500: #26c6da;
-  --color-gov-cyan-600: #0097a7;
+  /* Gold accent (was cyan) */
+  --color-gov-cyan-100: #faf0cb;
+  --color-gov-cyan-300: #f5e197;
+  --color-gov-cyan-400: #eecb5f;
+  --color-gov-cyan-500: #e6b53a;
+  --color-gov-cyan-600: #d49a1f;
 
   /* Gray scale (UI neutrals) */
   --color-gov-gray-50:  #f8f9fa;
@@ -58,7 +59,7 @@
   --color-gov-gray-800: #1f2937;
   --color-gov-gray-900: #111827;
 
-  --color-gov-focus: #26c6da;
+  --color-gov-focus: #3fc07a;
 }
 
 /* Portal brand tokens — the Ebonyi seal's emerald green and gold, plus a deep
@@ -149,13 +150,13 @@
     @apply inline-flex items-center justify-center rounded-md font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-gov-focus focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
   }
   .btn-primary {
-    @apply bg-gov-navy-600 text-white hover:bg-gov-navy-700 focus-visible:ring-offset-2 shadow-sm;
+    @apply bg-brand-600 text-white hover:bg-brand-700 focus-visible:ring-offset-2 shadow-sm;
   }
   .btn-secondary {
     @apply bg-gov-green-600 text-white hover:bg-gov-green-700 focus-visible:ring-offset-2 shadow-sm;
   }
   .btn-outline {
-    @apply border border-gov-navy-600 text-gov-navy-700 hover:bg-gov-navy-50;
+    @apply border border-brand-600 text-brand-700 hover:bg-brand-50;
   }
   .btn-ghost {
     @apply text-gov-gray-700 hover:bg-gov-gray-100;

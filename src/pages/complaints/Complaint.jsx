@@ -63,14 +63,14 @@ const Complaint = () => {
   return (
     <div className="pb-24 bg-gov-gray-50/30">
       {/* Institutional Masthead */}
-      <header className="bg-gov-navy-900 text-white pt-20 pb-16 border-b-4 border-gov-green-600 relative overflow-hidden">
+      <header className="bg-gov-navy-900 text-white pt-10 pb-8 md:pt-12 md:pb-10 border-b-4 border-gov-cyan-500 relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('/images/logo/logo.png')] bg-no-repeat bg-right-top opacity-5 grayscale pointer-events-none translate-x-1/4 -translate-y-1/4 scale-150" />
         <div className="container-custom relative z-10">
           <div className="max-w-3xl space-y-4">
-            <span className="inline-block px-3 py-1 bg-gov-green-600 text-white text-[10px] font-bold uppercase tracking-widest rounded-sm">
+            <span className="inline-block px-3 py-1 bg-gov-cyan-500 text-gov-navy-900 text-[10px] font-bold uppercase tracking-widest rounded-sm">
               Public Accountability Channel
             </span>
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tight">Complaints & Public Petitions</h1>
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Complaints & Public Petitions</h1>
             <p className="text-xl text-white/80 leading-relaxed max-w-2xl">
               The official administrative channel for submitting formal complaints, petitions, and service-related concerns directly to the Commission.
             </p>
@@ -78,75 +78,8 @@ const Complaint = () => {
         </div>
       </header>
 
-      {/* Guidance Section */}
-      <section className="bg-white border-b border-gov-gray-200 py-12 lg:py-16">
-        <div className="container-custom">
-          <div className="grid lg:grid-cols-[1fr_2fr] gap-12 lg:gap-20 items-start">
-            <div className="space-y-6 lg:sticky lg:top-8">
-              <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-gov-navy-900 border-b border-gov-gray-200 pb-2">
-                Submission Guidance
-              </h2>
-              <p className="text-sm text-gov-gray-600 leading-relaxed">
-                To ensure your concern is processed efficiently, please review these requirements before submitting your petition.
-              </p>
-              <div className="p-5 bg-gov-navy-50 border-l-4 border-gov-navy-600 space-y-3">
-                <h4 className="text-xs font-bold text-gov-navy-900 uppercase tracking-wider">Urgent Security Matters</h4>
-                <p className="text-xs text-gov-gray-600 leading-relaxed">
-                  For immediate security threats or criminal emergencies, please contact the appropriate state law enforcement or emergency services directly.
-                </p>
-              </div>
-            </div>
-
-            <div className="grid gap-8 sm:grid-cols-2">
-              <div className="space-y-3">
-                <h3 className="font-bold text-gov-navy-900">What to Submit</h3>
-                <ul className="space-y-2 text-sm text-gov-gray-600 list-disc pl-4 leading-relaxed">
-                  <li>Reports of administrative misconduct or staff impropriety.</li>
-                  <li>Concerns regarding service delivery quality in LGAs.</li>
-                  <li>Evidence-based reports of fraud, corruption, or extortion.</li>
-                  <li>Formal petitions regarding Commission policy implementation.</li>
-                </ul>
-              </div>
-              <div className="space-y-3">
-                <h3 className="font-bold text-gov-navy-900">What NOT to Submit</h3>
-                <ul className="space-y-2 text-sm text-gov-gray-600 list-disc pl-4 leading-relaxed">
-                  <li>Commercial solicitations or job applications.</li>
-                  <li>Personal grievances unrelated to public service.</li>
-                  <li>Abusive, defamatory, or false accusations.</li>
-                  <li>Spam or automated marketing content.</li>
-                </ul>
-              </div>
-              <div className="sm:col-span-2 p-6 border border-gov-gray-100 bg-gov-gray-50/50 space-y-4">
-                <h3 className="font-bold text-gov-navy-900">Information Handling & Integrity</h3>
-                <p className="text-sm text-gov-gray-600 leading-relaxed">
-                  All submissions are received through the Commission's official administrative channel. To assist in a thorough review, please provide specific details including dates, locations, and involved parties. False or malicious submissions are a violation of administrative integrity and will not be processed.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Process Timeline */}
-      <section className="container-custom pt-16">
-        <div className="grid gap-8 md:grid-cols-4">
-          {[
-            { step: '01', title: 'Formal Submission', desc: 'The petition is logged through the official intake channel.' },
-            { step: '02', title: 'Initial Review', desc: 'Compliance officers verify the submission and evidence.' },
-            { step: '03', title: 'Internal Review', desc: 'Concerns are routed for internal administrative review.' },
-            { step: '04', title: 'Official Response', desc: 'The Commission issues a formal response or follow-up.' }
-          ].map((item) => (
-            <div key={item.step} className="space-y-3">
-              <span className="text-2xl font-black text-gov-navy-900/10 tracking-tighter">{item.step}</span>
-              <h4 className="text-sm font-bold text-gov-navy-900 uppercase tracking-wide">{item.title}</h4>
-              <p className="text-xs text-gov-gray-500 leading-relaxed">{item.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
       {/* Complaint Form Section */}
-      <section className="container-custom py-16" id="complaint-form">
+      <section className="container-custom pt-10 pb-12" id="complaint-form">
         <div className="bg-white border border-gov-gray-200 shadow-sm overflow-hidden">
           <div className="bg-gov-navy-50 border-b border-gov-gray-200 p-8 lg:p-10">
             <h2 className="text-2xl font-bold text-gov-navy-900 uppercase tracking-tight">Administrative Intake Form</h2>
@@ -268,6 +201,73 @@ const Complaint = () => {
               </div>
             </form>
           </div>
+        </div>
+      </section>
+
+      {/* Guidance Section */}
+      <section className="bg-white border-b border-gov-gray-200 py-12 lg:py-16">
+        <div className="container-custom">
+          <div className="grid lg:grid-cols-[1fr_2fr] gap-12 lg:gap-20 items-start">
+            <div className="space-y-6 lg:sticky lg:top-8">
+              <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-gov-navy-900 border-b border-gov-gray-200 pb-2">
+                Submission Guidance
+              </h2>
+              <p className="text-sm text-gov-gray-600 leading-relaxed">
+                To ensure your concern is processed efficiently, please review these requirements before submitting your petition.
+              </p>
+              <div className="p-5 bg-gov-navy-50 border-l-4 border-gov-navy-600 space-y-3">
+                <h4 className="text-xs font-bold text-gov-navy-900 uppercase tracking-wider">Urgent Security Matters</h4>
+                <p className="text-xs text-gov-gray-600 leading-relaxed">
+                  For immediate security threats or criminal emergencies, please contact the appropriate state law enforcement or emergency services directly.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid gap-8 sm:grid-cols-2">
+              <div className="space-y-3">
+                <h3 className="font-bold text-gov-navy-900">What to Submit</h3>
+                <ul className="space-y-2 text-sm text-gov-gray-600 list-disc pl-4 leading-relaxed">
+                  <li>Reports of administrative misconduct or staff impropriety.</li>
+                  <li>Concerns regarding service delivery quality in LGAs.</li>
+                  <li>Evidence-based reports of fraud, corruption, or extortion.</li>
+                  <li>Formal petitions regarding Commission policy implementation.</li>
+                </ul>
+              </div>
+              <div className="space-y-3">
+                <h3 className="font-bold text-gov-navy-900">What NOT to Submit</h3>
+                <ul className="space-y-2 text-sm text-gov-gray-600 list-disc pl-4 leading-relaxed">
+                  <li>Commercial solicitations or job applications.</li>
+                  <li>Personal grievances unrelated to public service.</li>
+                  <li>Abusive, defamatory, or false accusations.</li>
+                  <li>Spam or automated marketing content.</li>
+                </ul>
+              </div>
+              <div className="sm:col-span-2 p-6 border border-gov-gray-100 bg-gov-gray-50/50 space-y-4">
+                <h3 className="font-bold text-gov-navy-900">Information Handling & Integrity</h3>
+                <p className="text-sm text-gov-gray-600 leading-relaxed">
+                  All submissions are received through the Commission's official administrative channel. To assist in a thorough review, please provide specific details including dates, locations, and involved parties. False or malicious submissions are a violation of administrative integrity and will not be processed.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Process Timeline */}
+      <section className="container-custom pt-16">
+        <div className="grid gap-8 md:grid-cols-4">
+          {[
+            { step: '01', title: 'Formal Submission', desc: 'The petition is logged through the official intake channel.' },
+            { step: '02', title: 'Initial Review', desc: 'Compliance officers verify the submission and evidence.' },
+            { step: '03', title: 'Internal Review', desc: 'Concerns are routed for internal administrative review.' },
+            { step: '04', title: 'Official Response', desc: 'The Commission issues a formal response or follow-up.' }
+          ].map((item) => (
+            <div key={item.step} className="space-y-3">
+              <span className="text-2xl font-black text-gov-navy-900/10 tracking-tighter">{item.step}</span>
+              <h4 className="text-sm font-bold text-gov-navy-900 uppercase tracking-wide">{item.title}</h4>
+              <p className="text-xs text-gov-gray-500 leading-relaxed">{item.desc}</p>
+            </div>
+          ))}
         </div>
       </section>
 
