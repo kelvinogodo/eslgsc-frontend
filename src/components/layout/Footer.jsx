@@ -47,7 +47,7 @@ const Footer = () => {
               <img 
                 src="/images/logo/logo.png" 
                 alt="ESLGSC Logo" 
-                className="h-12 w-12"
+                className="h-14 w-14 shrink-0 object-contain"
               />
               <div className="font-bold text-xl tracking-tight leading-tight">
                 ESLGSC <span className="block text-xs font-normal text-gov-gray-400">Ebonyi State</span>
