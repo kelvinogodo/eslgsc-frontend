@@ -9,7 +9,7 @@ import EmptyState from '../../../components/ui/EmptyState';
 import Skeleton from '../../../components/ui/Skeleton';
 import { Stagger, Item } from '../../../components/portal/motion';
 import { getUpcomingRetirements } from '../../../services/employeeService';
-import { fmtDate, daysUntil, humanSpan, span } from '../../../lib/retirement';
+import { fmtDate, daysUntil, humanSpan, span, todayDate } from '../../../lib/retirement';
 
 const titleCase = (s) => (s || '').trim().toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
 
@@ -73,7 +73,7 @@ const Retirements = () => {
                     <div className="hidden text-right sm:block">
                       <p className="text-xs font-bold uppercase tracking-wide text-ink-400">Retires</p>
                       <p className="font-bold text-ink-900">{fmtDate(r.retirement_date_calc)}</p>
-                      <p className="text-xs text-ink-500">{daysUntil(r.retirement_date_calc) <= 0 ? 'today' : `in ${humanSpan(span(new Date(), r.retirement_date_calc))}`}</p>
+                      <p className="text-xs text-ink-500">{daysUntil(r.retirement_date_calc) <= 0 ? 'today' : `in ${humanSpan(span(todayDate(), r.retirement_date_calc))}`}</p>
                     </div>
                     <div className="hidden text-right md:block">
                       <p className="text-xs font-bold uppercase tracking-wide text-ink-400">Leave</p>

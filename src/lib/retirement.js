@@ -9,10 +9,13 @@ const utcDay = (d) => {
   const x = new Date(d);
   return Date.UTC(x.getUTCFullYear(), x.getUTCMonth(), x.getUTCDate());
 };
+// Today's date in Lagos (West Africa Time), whatever the viewer's own time zone is,
+// as a UTC-midnight timestamp so it compares cleanly with the API's dates.
 const today = () => {
-  const n = new Date();
-  return Date.UTC(n.getFullYear(), n.getMonth(), n.getDate());
+  const [y, m, d] = new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Lagos' }).format(new Date()).split('-').map(Number);
+  return Date.UTC(y, m - 1, d);
 };
+export const todayDate = () => todayDate();
 
 /** Whole years/months/days between two dates, e.g. { years: 3, months: 2, days: 5 }. */
 export const span = (from, to) => {
@@ -44,25 +47,25 @@ export const humanSpan = ({ years, months, days }) => {
 
 export const daysUntil = (d) => Math.round((utcDay(d) - today()) / 86_400_000);
 
-export const ageFrom = (dob) => (dob ? span(dob, new Date(today())).years : null);
-export const serviceYears = (first) => (first ? span(first, new Date(today())) : null);
+export const ageFrom = (dob) => (dob ? span(dob, todayDate()).years : null);
+export const serviceYears = (first) => (first ? span(first, todayDate()) : null);
 
 /** Where the person is in the retirement timeline. */
 export const retirementState = (retirementDate, leaveDate) => {
   if (!retirementDate) return null;
   const toRetire = daysUntil(retirementDate);
   if (toRetire < 0) {
-    return { tone: 'red', label: 'Past retirement date', detail: `Retirement date passed ${humanSpan(span(retirementDate, new Date(today())))} ago.` };
+    return { tone: 'red', label: 'Past retirement date', detail: `Retirement date passed ${humanSpan(span(retirementDate, todayDate()))} ago.` };
   }
   if (toRetire === 0) return { tone: 'red', label: 'Retires today', detail: 'Today is the retirement date.' };
   if (leaveDate && daysUntil(leaveDate) <= 0) {
-    return { tone: 'yellow', label: 'On retirement leave', detail: `Retires in ${humanSpan(span(new Date(today()), retirementDate))}.` };
+    return { tone: 'yellow', label: 'On retirement leave', detail: `Retires in ${humanSpan(span(todayDate(), retirementDate))}.` };
   }
   const soon = toRetire <= 122; // about 4 months: the point at which admins are notified
   return {
     tone: soon ? 'yellow' : 'green',
     label: soon ? 'Retiring soon' : 'In service',
-    detail: `Retires in ${humanSpan(span(new Date(today()), retirementDate))}.`
+    detail: `Retires in ${humanSpan(span(todayDate(), retirementDate))}.`
   };
 };
 
