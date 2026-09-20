@@ -1,279 +1,161 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import Card from '../../../components/ui/Card';
-import Table from '../../../components/ui/Table';
-import Modal from '../../../components/ui/Modal';
-import AuditDetailModal from '../../../components/dashboard/audit/AuditDetailModal';
-import { getAllNews, approveNews, rejectNews, deleteNews } from '../../../services/newsService';
-import { NEWS_STATUS } from '../../../lib/constants';
+import { AnimatePresence, motion } from 'framer-motion';
 import { toast } from 'react-toastify';
-import useAuth from '../../../context/useAuth';
-import Badge from '../../../components/ui/Badge';
-import Button from '../../../components/ui/Button';
+import { NewspaperIcon, ArrowTopRightOnSquareIcon, TrashIcon, PhotoIcon, PencilSquareIcon } from '@heroicons/react/24/outline';
+import { Link } from 'react-router-dom';
+import PageHeader from '../../../components/portal/PageHeader';
+import SegmentedControl from '../../../components/portal/SegmentedControl';
+import SearchBox from '../../../components/portal/SearchBox';
+import ConfirmDialog from '../../../components/portal/ConfirmDialog';
+import Avatar from '../../../components/portal/Avatar';
+import AuditDetailModal from '../../../components/dashboard/audit/AuditDetailModal';
 import EmptyState from '../../../components/ui/EmptyState';
 import Skeleton from '../../../components/ui/Skeleton';
-import { formatDate } from '../../../lib/utils';
+import { getAllNews, approveNews, rejectNews, deleteNews } from '../../../services/newsService';
+import { NEWS_STATUS } from '../../../lib/constants';
+import { categoryLabel } from '../../../lib/article';
+import { timeAgo, formatDateTime } from '../../../lib/utils';
+import { EASE } from '../../../components/portal/motionVariants';
 
 const NewsModeration = () => {
-  useAuth();
   const queryClient = useQueryClient();
-  const [selectedItem, setSelectedItem] = useState(null);
-  const [deleteConfirm, setDeleteConfirm] = useState(null); // { id, title }
+  const [tab, setTab] = useState('pending');
+  const [search, setSearch] = useState('');
+  const [selected, setSelected] = useState(null);
+  const [toDelete, setToDelete] = useState(null);
 
-  // Fetch pending (awaiting approval) news articles directly
-  const { data: pendingNews = [], isLoading: loadingPending } = useQuery({
-    queryKey: ['news', 'pending'],
-    queryFn: () => getAllNews({ status: NEWS_STATUS.PENDING })
-  });
-
-  // Fetch published news articles
-  const { data: publishedNews = [], isLoading: loadingPublished } = useQuery({
-    queryKey: ['news', 'published'],
-    queryFn: () => getAllNews({ status: NEWS_STATUS.PUBLISHED })
-  });
+  const { data: pending = [], isLoading: loadingPending } = useQuery({ queryKey: ['news', 'pending'], queryFn: () => getAllNews({ status: NEWS_STATUS.PENDING }) });
+  const { data: published = [], isLoading: loadingPublished } = useQuery({ queryKey: ['news', 'published'], queryFn: () => getAllNews({ status: NEWS_STATUS.PUBLISHED }) });
 
   const invalidate = () => {
-    queryClient.invalidateQueries({ queryKey: ['news', 'pending'] });
-    queryClient.invalidateQueries({ queryKey: ['news', 'published'] });
+    queryClient.invalidateQueries({ queryKey: ['news'] });
+    queryClient.invalidateQueries({ queryKey: ['auditQueue'] });
     queryClient.invalidateQueries({ queryKey: ['activityLog'] });
+    queryClient.invalidateQueries({ queryKey: ['dashboard', 'notifications'] });
   };
 
-  const approveMutation = useMutation({
-    mutationFn: (notes) => approveNews(selectedItem.id, { notes }),
-    onSuccess: () => {
-      toast.success('Article approved and published');
-      invalidate();
-      setSelectedItem(null);
-    },
-    onError: (error) => toast.error(error?.message || 'Unable to approve article')
+  const approve = useMutation({
+    mutationFn: (notes) => approveNews(selected.id, { notes }),
+    onSuccess: () => { toast.success('Approved — it’s now live on the website'); invalidate(); setSelected(null); },
+    onError: (e) => toast.error(e?.response?.data?.message || 'We couldn’t approve that article.')
   });
-
-  const rejectMutation = useMutation({
-    mutationFn: (notes) => rejectNews(selectedItem.id, { notes }),
-    onSuccess: () => {
-      toast.info('Article sent back to author');
-      invalidate();
-      setSelectedItem(null);
-    },
-    onError: (error) => toast.error(error?.message || 'Unable to reject article')
+  const reject = useMutation({
+    mutationFn: (notes) => rejectNews(selected.id, { notes }),
+    onSuccess: () => { toast.info('Sent back to the writer with your feedback'); invalidate(); setSelected(null); },
+    onError: (e) => toast.error(e?.response?.data?.message || 'We couldn’t send that back.')
   });
-
-  const deleteMutation = useMutation({
+  const remove = useMutation({
     mutationFn: (id) => deleteNews(id),
-    onSuccess: () => {
-      toast.success('Article deleted');
-      setDeleteConfirm(null);
-      invalidate();
-    },
-    onError: (error) => {
-      toast.error(error?.message || 'Unable to delete article');
-      setDeleteConfirm(null);
-    }
+    onSuccess: () => { toast.success('Article deleted'); setToDelete(null); invalidate(); },
+    onError: (e) => { setToDelete(null); toast.error(e?.response?.data?.message || 'We couldn’t delete that article.'); }
   });
 
-  const handleDeleteClick = (article) => {
-    setDeleteConfirm({ id: article.id, title: article.title });
-  };
-
-  const handleDeleteConfirm = () => {
-    if (deleteConfirm) {
-      deleteMutation.mutate(deleteConfirm.id);
-    }
-  };
+  const list = tab === 'pending' ? pending : published;
+  const loading = tab === 'pending' ? loadingPending : loadingPublished;
+  const visible = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return list.filter((a) => !q || `${a.title} ${a.summary} ${a.authorName}`.toLowerCase().includes(q));
+  }, [list, search]);
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gov-gray-900">News Moderation</h1>
-        <p className="text-gov-gray-600 mt-1">
-          Approve newsroom submissions and keep published content compliant and up-to-date.
-        </p>
-      </div>
-
-      <Card className="p-0">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gov-gray-100">
-          <div>
-            <h2 className="text-lg font-semibold text-gov-gray-900">Pending approval</h2>
-            <p className="text-sm text-gov-gray-600">
-              Review each story to ensure accuracy before publication.
-            </p>
-          </div>
-          <Badge variant="yellow">{pendingNews.length} awaiting review</Badge>
-        </div>
-        <div className="overflow-x-auto">
-          <Table>
-            <Table.Head>
-              <Table.Row>
-                <Table.HeaderCell>Title</Table.HeaderCell>
-                <Table.HeaderCell>Category</Table.HeaderCell>
-                <Table.HeaderCell>Submitted</Table.HeaderCell>
-                <Table.HeaderCell className="text-right">Action</Table.HeaderCell>
-              </Table.Row>
-            </Table.Head>
-            <Table.Body>
-              {loadingPending ? (
-                <Table.Row>
-                  <Table.Cell colSpan={4}>
-                    <Skeleton rows={4} />
-                  </Table.Cell>
-                </Table.Row>
-              ) : pendingNews.length === 0 ? (
-                <Table.Row>
-                  <Table.Cell colSpan={4} className="py-6">
-                    <EmptyState title="No pending submissions" description="No articles are awaiting moderation." />
-                  </Table.Cell>
-                </Table.Row>
-              ) : (
-                pendingNews.map((article) => (
-                  <Table.Row key={article.id}>
-                    <Table.Cell>
-                      <div className="space-y-1">
-                        <p className="font-medium text-gov-gray-900">{article.title || 'Untitled article'}</p>
-                        <p className="text-xs text-gov-gray-500">{article.summary || 'No summary provided'}</p>
-                      </div>
-                    </Table.Cell>
-                    <Table.Cell>{article.category || '—'}</Table.Cell>
-                    <Table.Cell>{article.submittedAt ? formatDate(article.submittedAt) : '—'}</Table.Cell>
-                    <Table.Cell className="text-right">
-                      <Button
-                        size="sm"
-                        onClick={() => setSelectedItem({
-                          id: article.id,
-                          entityType: 'news',
-                          entityName: article.title,
-                          submittedByName: article.authorName,
-                          submittedById: article.authorId,
-                          submittedAt: article.submittedAt || article.updatedAt,
-                          status: NEWS_STATUS.PENDING,
-                          payload: { article }
-                        })}
-                      >
-                        Review
-                      </Button>
-                    </Table.Cell>
-                  </Table.Row>
-                ))
-              )}
-            </Table.Body>
-          </Table>
-        </div>
-      </Card>
-
-      <Card className="p-0">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gov-gray-100">
-          <div>
-            <h2 className="text-lg font-semibold text-gov-gray-900">Published articles</h2>
-            <p className="text-sm text-gov-gray-600">Recently approved stories currently live on the site.</p>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => queryClient.invalidateQueries({ queryKey: ['news', 'published'] })}
-          >
-            Refresh list
-          </Button>
-        </div>
-        <div className="overflow-x-auto">
-          <Table>
-            <Table.Head>
-              <Table.Row>
-                <Table.HeaderCell>Title</Table.HeaderCell>
-                <Table.HeaderCell>Category</Table.HeaderCell>
-                <Table.HeaderCell>Published</Table.HeaderCell>
-                <Table.HeaderCell>Submitted</Table.HeaderCell>
-                <Table.HeaderCell>Author</Table.HeaderCell>
-                <Table.HeaderCell className="text-right">Actions</Table.HeaderCell>
-              </Table.Row>
-            </Table.Head>
-            <Table.Body>
-              {loadingPublished ? (
-                <Table.Row>
-                  <Table.Cell colSpan={4}>
-                    <Skeleton rows={4} />
-                  </Table.Cell>
-                </Table.Row>
-              ) : publishedNews.length === 0 ? (
-                <Table.Row>
-                  <Table.Cell colSpan={4} className="py-6">
-                    <EmptyState title="No published articles" description="No articles have been published yet." />
-                  </Table.Cell>
-                </Table.Row>
-              ) : (
-                publishedNews.map((article) => (
-                  <Table.Row key={article.id}>
-                    <Table.Cell>
-                      <div className="space-y-1">
-                        <p className="font-medium text-gov-gray-900">{article.title}</p>
-                        <p className="text-xs text-gov-gray-500">{article.summary}</p>
-                      </div>
-                    </Table.Cell>
-                    <Table.Cell>{article.category}</Table.Cell>
-                    <Table.Cell>{formatDate(article.publishedAt)}</Table.Cell>
-                    <Table.Cell>{formatDate(article.submittedAt || article.createdAt)}</Table.Cell>
-                    <Table.Cell>{article.authorName || 'Media Team'}</Table.Cell>
-                    <Table.Cell className="text-right space-x-2">
-                      <Button as={Link} to={`/news-and-updates/${article.slug || article.id}`} variant="outline" size="sm" target="_blank" rel="noopener noreferrer">
-                        View
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        className="text-red-600 hover:text-red-700"
-                        disabled={deleteMutation.isPending && deleteConfirm?.id === article.id}
-                        onClick={() => handleDeleteClick(article)}
-                      >
-                        {deleteMutation.isPending && deleteConfirm?.id === article.id ? 'Deleting…' : 'Delete'}
-                      </Button>
-                    </Table.Cell>
-                  </Table.Row>
-                ))
-              )}
-            </Table.Body>
-          </Table>
-        </div>
-      </Card>
-
-      <AuditDetailModal
-        item={selectedItem}
-        isOpen={Boolean(selectedItem)}
-        onClose={() => setSelectedItem(null)}
-        onApprove={(notes) => approveMutation.mutate(notes)}
-        onReject={(notes) => rejectMutation.mutate(notes)}
-        isApproving={approveMutation.isPending}
-        isRejecting={rejectMutation.isPending}
+    <div>
+      <PageHeader
+        icon={NewspaperIcon}
+        title="News Desk"
+        description="Review stories waiting to go live, and look after what’s already published on the website."
+        actions={<Link to="/dashboard/news-editor" className="btn btn-primary btn-lg"><PencilSquareIcon className="mr-2 h-5 w-5" aria-hidden="true" /> Write an article</Link>}
       />
 
-      {/* Delete Confirmation Modal */}
-      <Modal
-        isOpen={Boolean(deleteConfirm)}
-        onClose={() => setDeleteConfirm(null)}
-        title="Delete Article"
-        size="sm"
-      >
-        <div className="space-y-4">
-          <p className="text-gov-gray-700">
-            Are you sure you want to delete <strong>{deleteConfirm?.title}</strong>? This action cannot be undone.
-          </p>
-          <div className="flex gap-3 justify-end">
-            <Button
-              variant="outline"
-              onClick={() => setDeleteConfirm(null)}
-              disabled={deleteMutation.isPending}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="ghost"
-              className="bg-red-600 text-white hover:bg-red-700"
-              onClick={handleDeleteConfirm}
-              disabled={deleteMutation.isPending}
-            >
-              {deleteMutation.isPending ? 'Deleting…' : 'Delete Article'}
-            </Button>
-          </div>
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
+        <SegmentedControl
+          label="News list"
+          value={tab}
+          onChange={setTab}
+          options={[{ value: 'pending', label: 'Waiting for review', count: pending.length }, { value: 'published', label: 'Published', count: published.length }]}
+        />
+        <SearchBox value={search} onChange={setSearch} placeholder="Search articles or writers" className="w-full sm:w-72" />
+      </div>
+
+      {loading ? (
+        <div className="space-y-3">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-28 rounded-2xl" />)}</div>
+      ) : visible.length === 0 ? (
+        <div className="card p-4">
+          <EmptyState
+            icon={NewspaperIcon}
+            title={search ? 'Nothing matches that' : tab === 'pending' ? 'Nothing waiting for review' : 'No published articles yet'}
+            description={search ? 'Try a different word.' : tab === 'pending' ? 'You’re all caught up. New stories will appear here when writers send them.' : 'Approved and published stories will appear here.'}
+          />
         </div>
-      </Modal>
+      ) : (
+        <ul className="space-y-3">
+          <AnimatePresence initial={false} mode="popLayout">
+            {visible.map((a) => (
+              <motion.li
+                key={a.id}
+                layout
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.97 }}
+                transition={{ duration: 0.28, ease: EASE }}
+                className="group flex flex-col gap-4 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-ink-100 transition-shadow hover:shadow-lg hover:shadow-brand-900/5 sm:flex-row sm:items-center"
+              >
+                <div className="h-24 w-full shrink-0 overflow-hidden rounded-xl bg-ink-50 sm:h-20 sm:w-32">
+                  {a.imageUrl ? <img src={a.imageUrl} alt="" loading="lazy" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" /> : <div className="flex h-full items-center justify-center text-ink-200"><PhotoIcon className="h-8 w-8" /></div>}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-semibold text-ink-400">{categoryLabel(a.category)}</p>
+                  <h2 className="truncate text-lg font-extrabold text-ink-900">{a.title || 'Untitled article'}</h2>
+                  <p className="line-clamp-1 text-sm text-ink-500">{a.summary || 'No summary'}</p>
+                  <p className="mt-1.5 flex items-center gap-2 text-xs text-ink-400" title={formatDateTime(a.publishedAt || a.updatedAt)}>
+                    <Avatar name={a.authorName || 'Media'} size="sm" className="!h-5 !w-5 !text-[0.6rem]" />
+                    {a.authorName || 'Media team'} · {tab === 'pending' ? `sent ${timeAgo(a.submittedAt || a.updatedAt)}` : `published ${timeAgo(a.publishedAt)}`}
+                  </p>
+                </div>
+                <div className="flex shrink-0 items-center gap-2">
+                  {tab === 'pending' ? (
+                    <button
+                      type="button"
+                      className="btn btn-primary btn-md"
+                      onClick={() => setSelected({ id: a.id, entityId: a.id, entityType: 'news', entityName: a.title, submittedByName: a.authorName, submittedById: a.authorId, submittedAt: a.submittedAt || a.updatedAt, payload: { article: a } })}
+                    >
+                      Review
+                    </button>
+                  ) : (
+                    <>
+                      <a href={`/news-and-updates/${a.slug || a.id}`} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-md"><ArrowTopRightOnSquareIcon className="mr-1.5 h-4 w-4" aria-hidden="true" /> View</a>
+                      <Link to={`/dashboard/news-editor/${a.id}`} className="btn btn-ghost btn-md">Edit</Link>
+                      <button type="button" onClick={() => setToDelete(a)} className="btn btn-ghost btn-md !text-red-600" aria-label={`Delete ${a.title}`}><TrashIcon className="h-5 w-5" /></button>
+                    </>
+                  )}
+                </div>
+              </motion.li>
+            ))}
+          </AnimatePresence>
+        </ul>
+      )}
+
+      <AuditDetailModal
+        item={selected}
+        isOpen={Boolean(selected)}
+        onClose={() => setSelected(null)}
+        onApprove={(n) => approve.mutate(n)}
+        onReject={(n) => reject.mutate(n)}
+        isApproving={approve.isPending}
+        isRejecting={reject.isPending}
+      />
+
+      <ConfirmDialog
+        isOpen={Boolean(toDelete)}
+        onClose={() => setToDelete(null)}
+        onConfirm={() => remove.mutate(toDelete.id)}
+        loading={remove.isPending}
+        tone="danger"
+        title="Delete this article?"
+        message={`“${toDelete?.title}” will be removed from the website for good. This can’t be undone.`}
+        confirmLabel="Yes, delete it"
+        cancelLabel="Keep it"
+      />
     </div>
   );
 };

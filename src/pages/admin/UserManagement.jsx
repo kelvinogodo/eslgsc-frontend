@@ -1,169 +1,213 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import api from '../../services/api';
-import Button from '../../components/ui/Button';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { AnimatePresence, motion } from 'framer-motion';
 import { toast } from 'react-toastify';
+import { UsersIcon, UserPlusIcon, EnvelopeIcon, NoSymbolIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
+import useAuth from '../../context/useAuth';
+import PageHeader from '../../components/portal/PageHeader';
+import SearchBox from '../../components/portal/SearchBox';
+import SegmentedControl from '../../components/portal/SegmentedControl';
+import ConfirmDialog from '../../components/portal/ConfirmDialog';
+import Avatar from '../../components/portal/Avatar';
+import Badge from '../../components/ui/Badge';
 import EmptyState from '../../components/ui/EmptyState';
 import Skeleton from '../../components/ui/Skeleton';
+import Pagination from '../../components/ui/Pagination';
+import useDebouncedValue from '../../hooks/useDebouncedValue';
+import { ROLE_OPTIONS, roleLabel } from '../../lib/roles';
+import { listUsers, changeUserRole, setUserLga, setUserActive, forceResetPassword } from '../../services/userService';
+import { getLGAs } from '../../services/lgaService';
+import { EASE } from '../../components/portal/motionVariants';
+
+const PAGE_SIZE = 10;
+
+const statusBadge = (status) => {
+  if (status === 'disabled') return <Badge variant="red">Deactivated</Badge>;
+  if (status === 'invited') return <Badge variant="yellow">Invited</Badge>;
+  return <Badge variant="green">Active</Badge>;
+};
 
 const UserManagement = () => {
-  const [users, setUsers] = useState([]);
-  const [q, setQ] = useState('');
-  const [roleFilter, setRoleFilter] = useState('');
+  const { user: me } = useAuth();
+  const queryClient = useQueryClient();
+  const [search, setSearch] = useState('');
+  const [role, setRole] = useState('');
   const [status, setStatus] = useState('all');
   const [page, setPage] = useState(1);
-  const [pageSize] = useState(10);
-  const [loading, setLoading] = useState(false);
+  const [confirm, setConfirm] = useState(null); // { type, user, role? }
+  const q = useDebouncedValue(search);
 
-  const fetchUsers = useCallback(async () => {
-    setLoading(true);
-    try {
-      // Build params object and only include filters when meaningful to avoid sending empty strings
-      const params = { page, pageSize };
-      if (q && q.trim() !== '') params.q = q.trim();
-      if (roleFilter && roleFilter.trim() !== '') params.role = roleFilter;
-      if (status && status !== 'all') params.status = status;
+  const params = { page, pageSize: PAGE_SIZE, ...(q.trim() && { q: q.trim() }), ...(role && { role }), ...(status !== 'all' && { status }) };
+  const { data, isLoading, isFetching } = useQuery({ queryKey: ['users', params], queryFn: () => listUsers(params), placeholderData: (prev) => prev });
+  const { data: lgas = [] } = useQuery({ queryKey: ['lgas'], queryFn: () => getLGAs(), staleTime: 10 * 60 * 1000 });
 
-      const res = await api.get('/users', { params });
-      const payload = res.data;
-      if (Array.isArray(payload)) setUsers(payload);
-      else if (payload && Array.isArray(payload.data)) setUsers(payload.data);
-      else setUsers([]);
-    } catch (err) {
-      console.error('Failed to load users', err);
-      toast.error('Failed to load users');
-      setUsers([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [q, roleFilter, status, page, pageSize]);
+  const users = data?.data || [];
+  const total = data?.meta?.total ?? users.length;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
-  useEffect(() => { fetchUsers(); }, [fetchUsers]);
+  const refresh = () => queryClient.invalidateQueries({ queryKey: ['users'] });
+  const failed = (msg) => (err) => toast.error(err?.response?.data?.message || msg);
 
-  const changeRole = async (id, role) => {
-    try {
-      await api.patch(`/users/${id}/role`, { role });
-      toast.success('Role updated');
-      fetchUsers();
-    } catch (err) {
-      console.error('Change role failed', err);
-      toast.error('Failed to update role');
-    }
+  const roleMutation = useMutation({
+    mutationFn: ({ id, role: r }) => changeUserRole(id, r),
+    onSuccess: () => { toast.success('Role updated'); setConfirm(null); refresh(); },
+    onError: (e) => { setConfirm(null); failed('We couldn’t change that role.')(e); }
+  });
+  const lgaMutation = useMutation({
+    mutationFn: ({ id, lgaId }) => setUserLga(id, lgaId),
+    onSuccess: () => { toast.success('Local government updated'); refresh(); },
+    onError: failed('We couldn’t update the local government.')
+  });
+  const statusMutation = useMutation({
+    mutationFn: ({ id, active }) => setUserActive(id, active),
+    onSuccess: (_d, v) => { toast.success(v.active ? 'Account reactivated' : 'Account deactivated — they can no longer sign in'); setConfirm(null); refresh(); },
+    onError: (e) => { setConfirm(null); failed('We couldn’t change that account.')(e); }
+  });
+  const resetMutation = useMutation({
+    mutationFn: (id) => forceResetPassword(id),
+    onSuccess: () => { toast.success('A password reset email is on its way'); setConfirm(null); },
+    onError: (e) => { setConfirm(null); failed('We couldn’t send the reset email.')(e); }
+  });
+
+  const busy = roleMutation.isPending || statusMutation.isPending || resetMutation.isPending;
+
+  const runConfirm = () => {
+    if (!confirm) return;
+    if (confirm.type === 'role') roleMutation.mutate({ id: confirm.user.id, role: confirm.role });
+    if (confirm.type === 'deactivate') statusMutation.mutate({ id: confirm.user.id, active: false });
+    if (confirm.type === 'reactivate') statusMutation.mutate({ id: confirm.user.id, active: true });
+    if (confirm.type === 'reset') resetMutation.mutate(confirm.user.id);
   };
 
-  const forceReset = async (id) => {
-    try {
-      await api.post(`/users/${id}/force-reset`);
-      toast.success('Reset link sent');
-    } catch (err) {
-      console.error('Force reset failed', err);
-      toast.error('Failed to send reset link');
-    }
-  };
-
-  const toggleActive = async (u) => {
-    try {
-      const active = !(u.status === 'disabled');
-      await api.patch(`/users/${u.id}/status`, { active: !active });
-      toast.success(!active ? 'User reactivated' : 'User deactivated');
-      fetchUsers();
-    } catch (err) {
-      console.error('Toggle status failed', err);
-      toast.error('Failed to update status');
-    }
-  };
+  const confirmCopy = {
+    role: confirm && { title: 'Change this person’s role?', message: `${confirm.user.name} will become a ${roleLabel(confirm.role)}. What they can see and do will change straight away.`, label: 'Yes, change role', tone: 'primary' },
+    deactivate: confirm && { title: 'Deactivate this account?', message: `${confirm?.user?.name} will be signed out and won’t be able to sign in again until you reactivate them.`, label: 'Yes, deactivate', tone: 'danger' },
+    reactivate: confirm && { title: 'Reactivate this account?', message: `${confirm?.user?.name} will be able to sign in again.`, label: 'Yes, reactivate', tone: 'primary' },
+    reset: confirm && { title: 'Send a password reset?', message: `We’ll email ${confirm?.user?.email} a link to choose a new password.`, label: 'Send email', tone: 'primary' }
+  }[confirm?.type] || {};
 
   return (
-    <div className="p-6">
-      <h2 className="text-xl font-semibold mb-4">Users</h2>
-      <div className="flex flex-wrap items-end gap-3 mb-4">
-        <div className="flex-1 min-w-[240px]">
-          <label className="block text-sm font-medium mb-1">Search</label>
-          <input className="input w-full" value={q} onChange={(e) => { setPage(1); setQ(e.target.value); }} placeholder="name or email" />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">Role</label>
-          <select className="input" value={roleFilter} onChange={(e) => { setPage(1); setRoleFilter(e.target.value); }}>
-            <option value="">All</option>
-            <option value="SUPER_ADMIN">SUPER_ADMIN</option>
-            <option value="ADMIN">ADMIN</option>
-            <option value="MEDIA_ADMIN">MEDIA_ADMIN</option>
-            <option value="AUDIT">AUDIT</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">Status</label>
-          <select className="input" value={status} onChange={(e) => { setPage(1); setStatus(e.target.value); }}>
-            <option value="all">All</option>
-            <option value="active">Active</option>
-            <option value="invited">Invited</option>
-            <option value="disabled">Disabled</option>
-          </select>
-        </div>
-        <div>
-          <Button variant="secondary" onClick={fetchUsers} disabled={loading}>Refresh</Button>
-        </div>
+    <div>
+      <PageHeader
+        icon={UsersIcon}
+        title="Portal Users"
+        description="Everyone who can sign in to this portal. Change what someone can do, or stop them signing in."
+        actions={<Link to="/dashboard/admin/invite" className="btn btn-primary btn-lg"><UserPlusIcon className="mr-2 h-5 w-5" aria-hidden="true" /> Invite someone</Link>}
+      />
+
+      <div className="mb-5 flex flex-wrap items-center gap-3">
+        <SearchBox value={search} onChange={(v) => { setSearch(v); setPage(1); }} placeholder="Search by name or email" className="w-full sm:w-80" />
+        <select aria-label="Filter by role" value={role} onChange={(e) => { setRole(e.target.value); setPage(1); }} className="select w-auto">
+          <option value="">Every role</option>
+          {ROLE_OPTIONS.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
+        </select>
+        <SegmentedControl
+          size="sm"
+          label="Filter by status"
+          value={status}
+          onChange={(v) => { setStatus(v); setPage(1); }}
+          options={[{ value: 'all', label: 'All' }, { value: 'active', label: 'Active' }, { value: 'invited', label: 'Invited' }, { value: 'disabled', label: 'Deactivated' }]}
+        />
+        {isFetching && !isLoading && <ArrowPathIcon className="h-5 w-5 animate-spin text-ink-300" aria-label="Refreshing" />}
       </div>
 
-      {loading ? (
-        <div className="py-6">
-          <Skeleton rows={6} />
-        </div>
-      ) : users.length === 0 ? (
-        <div className="py-6">
-          <EmptyState title="No users" description="No users found." />
-        </div>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-white border">
-            <thead>
-              <tr className="text-left text-sm text-gov-gray-600">
-                <th className="p-3 border-b">Name</th>
-                <th className="p-3 border-b">Email</th>
-                <th className="p-3 border-b">Role</th>
-                <th className="p-3 border-b">Status</th>
-                <th className="p-3 border-b">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((u) => (
-                <tr key={u.id} className="text-sm">
-                  <td className="p-3 border-b">{u.name || '\u2014'}</td>
-                  <td className="p-3 border-b">{u.email}</td>
-                  <td className="p-3 border-b">
-                    <select className="input" value={u.role} onChange={(e) => changeRole(u.id, e.target.value)}>
-                      <option value="SUPER_ADMIN">SUPER_ADMIN</option>
-                      <option value="ADMIN">ADMIN</option>
-                      <option value="MEDIA_ADMIN">MEDIA_ADMIN</option>
-                      <option value="AUDIT">AUDIT</option>
-                    </select>
-                  </td>
-                  <td className="p-3 border-b">
-                    <span className={
-                      u.status === 'disabled' ? 'px-2 py-0.5 text-xs rounded bg-red-100 text-red-700' :
-                      u.status === 'invited' ? 'px-2 py-0.5 text-xs rounded bg-amber-100 text-amber-700' :
-                      'px-2 py-0.5 text-xs rounded bg-green-100 text-green-700'
-                    }>
-                      {u.status || 'active'}
-                    </span>
-                  </td>
-                  <td className="p-3 border-b space-x-2">
-                    <Button variant="ghost" onClick={() => forceReset(u.id)}>Force reset</Button>
-                    <Button variant="outline" onClick={() => toggleActive(u)}>
-                      {u.status === 'disabled' ? 'Reactivate' : 'Deactivate'}
-                    </Button>
-                  </td>
+      <div className="card">
+        {isLoading ? (
+          <div className="p-6"><Skeleton rows={6} /></div>
+        ) : users.length === 0 ? (
+          <div className="p-6"><EmptyState icon={UsersIcon} title="No one matches that" description="Try a different search or filter." action={<button type="button" className="btn btn-outline btn-md" onClick={() => { setSearch(''); setRole(''); setStatus('all'); }}>Show everyone</button>} /></div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full">
+              <thead>
+                <tr>
+                  <th className="table-head">Person</th>
+                  <th className="table-head">What they can do</th>
+                  <th className="table-head">Status</th>
+                  <th className="table-head text-right">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      <div className="mt-4 flex items-center gap-2">
-        <Button variant="outline" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>Prev</Button>
-        <span className="text-sm text-gov-gray-600">Page {page}</span>
-        <Button variant="outline" onClick={() => setPage((p) => p + 1)}>Next</Button>
+              </thead>
+              <tbody className="divide-y divide-ink-100">
+                <AnimatePresence initial={false}>
+                  {users.map((u) => {
+                    const isMe = u.id === me?.id;
+                    return (
+                      <motion.tr key={u.id} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25, ease: EASE }}>
+                        <td className="table-cell">
+                          <div className="flex items-center gap-3">
+                            <Avatar name={u.name} />
+                            <div className="min-w-0">
+                              <p className="flex items-center gap-2 font-bold text-ink-900">{u.name || '—'} {isMe && <Badge variant="blue">You</Badge>}</p>
+                              <p className="truncate text-xs text-ink-400">{u.email}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="table-cell">
+                          <div className="flex flex-col gap-2">
+                            <select
+                              aria-label={`Role for ${u.name}`}
+                              value={u.role}
+                              disabled={isMe || busy}
+                              title={isMe ? 'You can’t change your own role' : ''}
+                              onChange={(e) => e.target.value !== u.role && setConfirm({ type: 'role', user: u, role: e.target.value })}
+                              className="select !min-h-10 min-w-[13rem]"
+                            >
+                              {ROLE_OPTIONS.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
+                            </select>
+                            {u.role === 'LGA' && (
+                              <select
+                                aria-label={`Local government for ${u.name}`}
+                                value={u.lgaId || ''}
+                                onChange={(e) => lgaMutation.mutate({ id: u.id, lgaId: e.target.value || null })}
+                                className={`select !min-h-10 min-w-[13rem] ${u.lgaId ? '' : 'border-gold-400'}`}
+                              >
+                                <option value="">Choose local government…</option>
+                                {lgas.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
+                              </select>
+                            )}
+                          </div>
+                        </td>
+                        <td className="table-cell">{statusBadge(u.status)}</td>
+                        <td className="table-cell">
+                          <div className="flex justify-end gap-2">
+                            <button type="button" disabled={busy || u.status === 'invited'} onClick={() => setConfirm({ type: 'reset', user: u })} className="btn btn-ghost btn-sm" title="Email a password reset link">
+                              <EnvelopeIcon className="mr-1.5 h-4 w-4" aria-hidden="true" /> Reset password
+                            </button>
+                            {u.status === 'disabled' ? (
+                              <button type="button" disabled={busy} onClick={() => setConfirm({ type: 'reactivate', user: u })} className="btn btn-outline btn-sm">Reactivate</button>
+                            ) : (
+                              <button type="button" disabled={busy || isMe} title={isMe ? 'You can’t deactivate yourself' : ''} onClick={() => setConfirm({ type: 'deactivate', user: u })} className="btn btn-outline btn-sm !text-red-600 hover:!bg-red-50 hover:!border-red-200">
+                                <NoSymbolIcon className="mr-1.5 h-4 w-4" aria-hidden="true" /> Deactivate
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </motion.tr>
+                    );
+                  })}
+                </AnimatePresence>
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
+
+      <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm font-semibold text-ink-400">{total} {total === 1 ? 'person' : 'people'}</p>
+        {totalPages > 1 && <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />}
+      </div>
+
+      <ConfirmDialog
+        isOpen={Boolean(confirm)}
+        onClose={() => setConfirm(null)}
+        onConfirm={runConfirm}
+        loading={busy}
+        title={confirmCopy.title}
+        message={confirmCopy.message}
+        confirmLabel={confirmCopy.label}
+        tone={confirmCopy.tone}
+      />
     </div>
   );
 };

@@ -1,205 +1,202 @@
-import { useMemo } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import Card from '../../../components/ui/Card';
-import Table from '../../../components/ui/Table';
-import Button from '../../../components/ui/Button';
-import Badge from '../../../components/ui/Badge';
-import Loader from '../../../components/ui/Loader';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { AnimatePresence, motion } from 'framer-motion';
+import { toast } from 'react-toastify';
+import {
+  PencilSquareIcon,
+  MagnifyingGlassIcon,
+  PaperAirplaneIcon,
+  ArrowTopRightOnSquareIcon,
+  PhotoIcon,
+  ExclamationCircleIcon,
+  DocumentTextIcon
+} from '@heroicons/react/24/outline';
+import useAuth from '../../../context/useAuth';
+import PageHeader from '../../../components/portal/PageHeader';
+import SegmentedControl from '../../../components/portal/SegmentedControl';
+import ConfirmDialog from '../../../components/portal/ConfirmDialog';
+import NewsStatusBadge from '../../../components/dashboard/news/NewsStatusBadge';
 import EmptyState from '../../../components/ui/EmptyState';
 import Skeleton from '../../../components/ui/Skeleton';
-import useAuth from '../../../context/useAuth';
-import {
-  getAllNews,
-  submitNewsForApproval
-} from '../../../services/newsService';
-import { NEWS_STATUS } from '../../../lib/constants';
-import { toast } from 'react-toastify';
-import { formatDate } from '../../../lib/utils';
+import { getAllNews, submitNewsForApproval } from '../../../services/newsService';
+import { categoryLabel, stripHtml, buildChecklist } from '../../../lib/article';
+import { timeAgo } from '../../../lib/utils';
+import { EASE } from '../../../components/portal/motionVariants';
 
 const Drafts = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const [tab, setTab] = useState('all');
+  const [search, setSearch] = useState('');
+  const [toSubmit, setToSubmit] = useState(null);
+  const publishes = ['SUPER_ADMIN', 'ADMIN'].includes(user?.role);
 
-  const queryEnabled = Boolean(user?.id);
-
-  const { data: drafts = [], isLoading: loadingDrafts, isFetching: fetchingDrafts } = useQuery({
-    queryKey: ['news', 'drafts', user?.id],
-    queryFn: () => getAllNews({ status: NEWS_STATUS.DRAFT, authorId: user.id }),
-    enabled: queryEnabled
-  });
-
-  const { data: pending = [], isLoading: loadingPending, isFetching: fetchingPending } = useQuery({
-    queryKey: ['news', 'pending', user?.id],
-    queryFn: () => getAllNews({ status: NEWS_STATUS.PENDING, authorId: user.id }),
-    enabled: queryEnabled
+  const { data: articles = [], isLoading } = useQuery({
+    queryKey: ['news', 'mine', user?.id],
+    queryFn: () => getAllNews({ authorId: user.id }),
+    enabled: Boolean(user?.id)
   });
 
   const submitMutation = useMutation({
-    mutationFn: (id) => submitNewsForApproval(id, { actor: user }),
+    mutationFn: (id) => submitNewsForApproval(id, {}),
     onSuccess: () => {
-      // Check if user is SUPER_ADMIN or ADMIN (auto-approved)
-      if (user?.role === 'SUPER_ADMIN' || user?.role === 'ADMIN') {
-        toast.success('Article published successfully');
-      } else {
-        toast.success('Draft submitted for approval');
-      }
-      queryClient.invalidateQueries({ queryKey: ['news', 'drafts', user?.id] });
-      queryClient.invalidateQueries({ queryKey: ['news', 'pending', user?.id] });
+      toast.success(publishes ? 'Published — it’s now live on the website' : 'Sent for review');
+      setToSubmit(null);
+      queryClient.invalidateQueries({ queryKey: ['news'] });
       queryClient.invalidateQueries({ queryKey: ['auditQueue'] });
     },
     onError: (error) => {
-      console.error('Submit error:', error);
-      
-      // Handle specific HTTP status codes
-      if (error?.response?.status === 403) {
-        toast.error('You do not have permission to submit news articles');
-      } else if (error?.response?.status === 500) {
-        toast.error('Server error. Please try again later');
-      } else if (error?.response?.data?.message) {
-        toast.error(error.response.data.message);
-      } else {
-        toast.error(error?.message || 'Unable to submit draft');
-      }
+      setToSubmit(null);
+      toast.error(error?.response?.data?.message || 'We couldn’t send that. Please try again.');
     }
   });
 
-  const tablesLoading = useMemo(
-    () => loadingDrafts || loadingPending || fetchingDrafts || fetchingPending,
-    [loadingDrafts, loadingPending, fetchingDrafts, fetchingPending]
-  );
+  const counts = useMemo(() => ({
+    all: articles.length,
+    draft: articles.filter((a) => a.status === 'draft').length,
+    pending: articles.filter((a) => a.status === 'pending').length,
+    published: articles.filter((a) => a.status === 'published').length
+  }), [articles]);
+
+  const visible = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return [...articles]
+      .filter((a) => tab === 'all' || a.status === tab)
+      .filter((a) => !q || `${a.title} ${a.summary}`.toLowerCase().includes(q))
+      .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+  }, [articles, tab, search]);
+
+  const readyToSend = (a) => buildChecklist({ title: a.title || '', summary: a.summary || '', content: a.content || '', imageUrl: a.imageUrl }).filter((i) => i.required).every((i) => i.ok);
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gov-gray-900">My Articles</h1>
-        <p className="text-gov-gray-600 mt-1">
-          Draft, track, and resubmit newsroom content directly from your workspace.
-        </p>
+    <div>
+      <PageHeader
+        icon={DocumentTextIcon}
+        title="My Articles"
+        description="Everything you’ve written, in one place — drafts you can keep working on, stories waiting for review, and what’s already live."
+        actions={(
+          <Link to="/dashboard/news-editor" className="btn btn-primary btn-lg">
+            <PencilSquareIcon className="mr-2 h-5 w-5" aria-hidden="true" /> Write a new article
+          </Link>
+        )}
+      />
+
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
+        <SegmentedControl
+          label="Filter articles"
+          value={tab}
+          onChange={setTab}
+          options={[
+            { value: 'all', label: 'All', count: counts.all },
+            { value: 'draft', label: 'Drafts', count: counts.draft },
+            { value: 'pending', label: 'In review', count: counts.pending },
+            { value: 'published', label: 'Published', count: counts.published }
+          ]}
+        />
+        <div className="relative w-full sm:w-72">
+          <MagnifyingGlassIcon className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-ink-300" aria-hidden="true" />
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search my articles"
+            aria-label="Search my articles"
+            className="input pl-11"
+          />
+        </div>
       </div>
 
-      {tablesLoading ? (
-        <div className="flex flex-col items-center justify-center py-16 gap-4">
-          <Loader size="lg" label="Loading articles…" />
-          <p className="text-sm text-gov-gray-500">Fetching your drafts and pending submissions</p>
-          <div className="w-full max-w-md p-4">
-            <Skeleton rows={4} />
-          </div>
+      {isLoading ? (
+        <div className="space-y-3">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-28 rounded-2xl" />)}</div>
+      ) : visible.length === 0 ? (
+        <div className="card p-4">
+          <EmptyState
+            icon={DocumentTextIcon}
+            title={articles.length === 0 ? 'No articles yet' : 'Nothing matches that'}
+            description={articles.length === 0 ? 'Start your first story — it saves itself as you type, so you can’t lose your work.' : 'Try a different filter or search word.'}
+            action={articles.length === 0 ? <Link to="/dashboard/news-editor" className="btn btn-primary btn-md">Write your first article</Link> : (
+              <button type="button" className="btn btn-outline btn-md" onClick={() => { setTab('all'); setSearch(''); }}>Show everything</button>
+            )}
+          />
         </div>
       ) : (
-        <div className="grid gap-6 lg:grid-cols-2">
-          <Card className="p-0">
-            <div className="px-6 py-4 border-b border-gov-gray-100 flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-semibold text-gov-gray-900">Drafts</h2>
-                <p className="text-sm text-gov-gray-600">Articles saved locally and not yet shared for approval.</p>
-              </div>
-              <Badge variant="gray">{drafts.length} drafts</Badge>
-            </div>
-            <div className="overflow-x-auto">
-              <Table>
-                <Table.Head>
-                  <Table.Row>
-                    <Table.HeaderCell>Title</Table.HeaderCell>
-                    <Table.HeaderCell>Updated</Table.HeaderCell>
-                    <Table.HeaderCell className="text-right">Actions</Table.HeaderCell>
-                  </Table.Row>
-                </Table.Head>
-                <Table.Body>
-                  {drafts.length === 0 ? (
-                      <Table.Row>
-                        <Table.Cell colSpan={3} className="py-6">
-                          <EmptyState title="No drafts" description="No drafts yet. Start a new article to see it here." />
-                        </Table.Cell>
-                      </Table.Row>
-                    ) : (
-                    drafts.map((draft) => (
-                      <Table.Row key={draft.id}>
-                        <Table.Cell>
-                          <div className="space-y-1">
-                            <Link
-                              to={`/dashboard/news-editor/${draft.id}`}
-                              className="font-medium text-gov-blue-600 hover:text-gov-blue-700"
-                            >
-                              {draft.title || 'Untitled article'}
-                            </Link>
-                            {draft.rejectionNotes && (
-                              <p className="text-xs text-red-600">Feedback: {draft.rejectionNotes}</p>
-                            )}
-                          </div>
-                        </Table.Cell>
-                        <Table.Cell>{draft.updatedAt ? formatDate(draft.updatedAt) : '—'}</Table.Cell>
-                        <Table.Cell className="text-right space-x-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => submitMutation.mutate(draft.id)}
-                            disabled={submitMutation.isPending}
-                          >
-                            Submit
-                          </Button>
-                          <Button
-                            as={Link}
-                            to={`/dashboard/news-editor/${draft.id}`}
-                            size="sm"
-                          >
-                            Edit
-                          </Button>
-                        </Table.Cell>
-                      </Table.Row>
-                    ))
-                  )}
-                </Table.Body>
-              </Table>
-            </div>
-          </Card>
-
-          <Card className="p-0">
-            <div className="px-6 py-4 border-b border-gov-gray-100 flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-semibold text-gov-gray-900">Awaiting approval</h2>
-                <p className="text-sm text-gov-gray-600">Submissions pending review by the super admin.</p>
-              </div>
-              <Badge variant="yellow">{pending.length} submitted</Badge>
-            </div>
-            <div className="overflow-x-auto">
-              <Table>
-                <Table.Head>
-                  <Table.Row>
-                    <Table.HeaderCell>Title</Table.HeaderCell>
-                    <Table.HeaderCell>Submitted</Table.HeaderCell>
-                    <Table.HeaderCell>Status</Table.HeaderCell>
-                  </Table.Row>
-                </Table.Head>
-                <Table.Body>
-                  {pending.length === 0 ? (
-                    <Table.Row>
-                      <Table.Cell colSpan={3} className="py-6">
-                        <EmptyState title="No pending submissions" description="You have no items awaiting approval." />
-                      </Table.Cell>
-                    </Table.Row>
+        <ul className="space-y-3">
+          <AnimatePresence initial={false} mode="popLayout">
+            {visible.map((a) => (
+              <motion.li
+                key={a.id}
+                layout
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.97 }}
+                transition={{ duration: 0.28, ease: EASE }}
+                className="group flex flex-col gap-4 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-ink-100 transition-shadow hover:shadow-lg hover:shadow-brand-900/5 sm:flex-row sm:items-center"
+              >
+                <div className="h-24 w-full shrink-0 overflow-hidden rounded-xl bg-ink-50 sm:h-20 sm:w-32">
+                  {a.imageUrl ? (
+                    <img src={a.imageUrl} alt="" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
                   ) : (
-                    pending.map((item) => (
-                      <Table.Row key={item.id}>
-                        <Table.Cell>
-                          <div className="space-y-1">
-                            <p className="font-medium text-gov-gray-900">{item.title}</p>
-                            <p className="text-xs text-gov-gray-500">{item.category}</p>
-                          </div>
-                        </Table.Cell>
-                        <Table.Cell>{item.submittedAt ? formatDate(item.submittedAt) : '—'}</Table.Cell>
-                        <Table.Cell>
-                          <Badge variant="yellow">Pending</Badge>
-                        </Table.Cell>
-                      </Table.Row>
-                    ))
+                    <div className="flex h-full items-center justify-center text-ink-200"><PhotoIcon className="h-8 w-8" /></div>
                   )}
-                </Table.Body>
-              </Table>
-            </div>
-          </Card>
-        </div>
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <NewsStatusBadge status={a.status} />
+                    <span className="text-xs font-semibold text-ink-400">{categoryLabel(a.category)} · edited {timeAgo(a.updatedAt)}</span>
+                  </div>
+                  <h2 className="mt-1.5 truncate text-lg font-extrabold text-ink-900">{a.title || 'Untitled article'}</h2>
+                  <p className="line-clamp-1 text-sm text-ink-500">{a.summary || stripHtml(a.content).slice(0, 140) || 'No text yet'}</p>
+                  {a.status === 'draft' && a.rejectionNotes && (
+                    <p className="mt-1.5 flex items-start gap-1.5 text-sm font-semibold text-red-600">
+                      <ExclamationCircleIcon className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" /> Reviewer feedback: {a.rejectionNotes}
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex shrink-0 flex-wrap items-center gap-2">
+                  {a.status === 'draft' && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => setToSubmit(a)}
+                        disabled={!readyToSend(a)}
+                        title={readyToSend(a) ? '' : 'Open the article and finish the checklist first'}
+                        className="btn btn-outline btn-md"
+                      >
+                        <PaperAirplaneIcon className="mr-2 h-4 w-4" aria-hidden="true" /> {publishes ? 'Publish' : 'Send'}
+                      </button>
+                      <Link to={`/dashboard/news-editor/${a.id}`} className="btn btn-primary btn-md">Keep writing</Link>
+                    </>
+                  )}
+                  {a.status === 'pending' && <Link to={`/dashboard/news-editor/${a.id}`} className="btn btn-outline btn-md">View</Link>}
+                  {a.status === 'published' && (
+                    <>
+                      <Link to={`/dashboard/news-editor/${a.id}`} className="btn btn-outline btn-md">Open</Link>
+                      <a href={`/news-and-updates/${a.slug || a.id}`} target="_blank" rel="noopener noreferrer" className="btn btn-ghost btn-md" aria-label="View on the website">
+                        <ArrowTopRightOnSquareIcon className="h-5 w-5" aria-hidden="true" />
+                      </a>
+                    </>
+                  )}
+                </div>
+              </motion.li>
+            ))}
+          </AnimatePresence>
+        </ul>
       )}
+
+      <ConfirmDialog
+        isOpen={Boolean(toSubmit)}
+        onClose={() => setToSubmit(null)}
+        onConfirm={() => submitMutation.mutate(toSubmit.id)}
+        loading={submitMutation.isPending}
+        title={publishes ? 'Publish this article?' : 'Send for review?'}
+        message={publishes
+          ? `“${toSubmit?.title}” will go live on the website straight away.`
+          : `“${toSubmit?.title}” will be sent to a reviewer. You won’t be able to edit it while it’s being reviewed.`}
+        confirmLabel={publishes ? 'Yes, publish it' : 'Yes, send it'}
+      />
     </div>
   );
 };

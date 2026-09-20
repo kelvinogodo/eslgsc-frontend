@@ -1,9 +1,21 @@
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { ClipboardDocumentCheckIcon, ChatBubbleLeftRightIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
-import Card from '../../../components/ui/Card';
+import {
+  ClipboardDocumentCheckIcon,
+  ChatBubbleLeftRightIcon,
+  FingerPrintIcon,
+  ClockIcon
+} from '@heroicons/react/24/outline';
+import DashboardHero from '../../../components/portal/DashboardHero';
+import { heroButton } from '../../../components/portal/heroStyles';
+import StatCard from '../../../components/portal/StatCard';
+import ActionTile from '../../../components/portal/ActionTile';
+import ActivityFeed from '../../../components/portal/ActivityFeed';
+import { Stagger } from '../../../components/portal/motion';
 import { getAuditQueue } from '../../../services/auditService';
 import { getComplaints } from '../../../services/complaintService';
+import { getActivityLog } from '../../../services/activityService';
+import { getAuditTrail } from '../../../services/auditTrailService';
 
 const AuditDashboard = () => {
   const { data: auditQueue = [], isLoading: loadingQueue } = useQuery({
@@ -18,85 +30,52 @@ const AuditDashboard = () => {
     staleTime: 30 * 1000
   });
 
-  const stats = [
-    {
-      name: 'Pending Reviews',
-      value: loadingQueue ? null : String(auditQueue.length),
-      loading: loadingQueue,
-      icon: ClipboardDocumentCheckIcon
-    },
-    {
-      name: 'New Complaints',
-      value: loadingComplaints ? null : String(complaintsRes?.meta?.total ?? 0),
-      loading: loadingComplaints,
-      icon: ChatBubbleLeftRightIcon
-    }
-  ];
+  const { data: activity = [], isLoading: loadingActivity } = useQuery({
+    queryKey: ['activityLog', 'recent'],
+    queryFn: () => getActivityLog({}),
+    staleTime: 60 * 1000
+  });
+
+  const { data: trail, isLoading: loadingTrail } = useQuery({
+    queryKey: ['auditTrail', 'count'],
+    queryFn: () => getAuditTrail({ limit: 1 }),
+    staleTime: 5 * 60 * 1000
+  });
+
+  const newComplaints = complaintsRes?.meta?.total ?? 0;
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl md:text-3xl font-bold text-gov-gray-900">
-          Audit Dashboard
-        </h1>
-        <p className="text-gov-gray-600 mt-1">
-          Review system activity and verify pending submissions
-        </p>
-      </div>
+    <div>
+      <DashboardHero message="Review what’s been submitted, follow up on public complaints and keep an eye on activity across the portal.">
+        <Link to="/dashboard/audit-queue" className={heroButton}>
+          <ClipboardDocumentCheckIcon className="h-5 w-5" aria-hidden="true" /> Open approvals
+        </Link>
+      </DashboardHero>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {stats.map((stat) => {
-          const Icon = stat.icon;
-          return (
-            <Card key={stat.name} className="p-6">
-              <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-gov-blue-100 rounded-lg flex items-center justify-center">
-                  <Icon className="w-6 h-6 text-gov-blue-600" />
-                </div>
-                <div>
-                  <div className="text-3xl font-bold text-gov-gray-900">
-                    {stat.loading ? (
-                      <div className="h-8 w-16 bg-gov-gray-100 rounded animate-pulse" />
-                    ) : (
-                      stat.value
-                    )}
-                  </div>
-                  <div className="text-sm text-gov-gray-600">
-                    {stat.name}
-                  </div>
-                </div>
-              </div>
-            </Card>
-          );
-        })}
-      </div>
+      <Stagger className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4" delay={0.1}>
+        <StatCard label="Waiting for review" hint="Submitted by the media team" value={auditQueue.length} loading={loadingQueue} icon={ClipboardDocumentCheckIcon} tone="gold" href="/dashboard/audit-queue" cta="Review" />
+        <StatCard label="New complaints" hint="Not yet looked at" value={newComplaints} loading={loadingComplaints} icon={ChatBubbleLeftRightIcon} tone={newComplaints ? 'red' : 'emerald'} href="/dashboard/complaints" />
+        <StatCard label="Portal actions logged" hint="Recent activity" value={activity.length} loading={loadingActivity} icon={ClockIcon} tone="ink" href="/dashboard/activity-log" cta="See all" />
+        <StatCard label="Enrollment records" hint="Staff enrollment history" value={trail?.meta?.total ?? 0} loading={loadingTrail} icon={FingerPrintIcon} href="/dashboard/audit-trail" cta="Explore" />
+      </Stagger>
 
-      <Card className="p-6">
-        <h2 className="text-lg font-semibold text-gov-gray-900 mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Link
-            to="/dashboard/audit-queue"
-            className="flex items-center justify-center p-4 bg-gov-blue-50 rounded-lg hover:bg-gov-blue-100 transition-colors"
-          >
-            <ClipboardDocumentCheckIcon className="w-6 h-6 text-gov-blue-600 mr-2" />
-            <span className="font-medium">Audit Queue</span>
-          </Link>
-          <Link
-            to="/dashboard/complaints"
-            className="flex items-center justify-center p-4 bg-gov-gray-100 rounded-lg hover:bg-gov-gray-200 transition-colors"
-          >
-            <ChatBubbleLeftRightIcon className="w-6 h-6 text-gov-gray-600 mr-2" />
-            <span className="font-medium">Complaints</span>
-          </Link>
-          <Link
-            to="/dashboard/audit-trail"
-            className="flex items-center justify-center p-4 bg-gov-gray-100 rounded-lg hover:bg-gov-gray-200 transition-colors"
-          >
-            <DocumentTextIcon className="w-6 h-6 text-gov-gray-600 mr-2" />
-            <span className="font-medium">Onboarding Audit Trail</span>
-          </Link>
-        </div>
-      </Card>
+      <div className="mt-8 grid gap-6 lg:grid-cols-5">
+        <section className="card p-6 lg:col-span-3" aria-labelledby="recent-heading">
+          <h2 id="recent-heading" className="mb-3 flex items-center gap-2 text-lg font-extrabold text-ink-900">
+            <ClockIcon className="h-5 w-5 text-brand-600" aria-hidden="true" /> Latest activity
+          </h2>
+          <ActivityFeed entries={activity} loading={loadingActivity} to="/dashboard/activity-log" />
+        </section>
+
+        <section className="lg:col-span-2" aria-labelledby="actions-heading">
+          <h2 id="actions-heading" className="mb-3 text-lg font-extrabold text-ink-900">Where to next?</h2>
+          <Stagger className="space-y-3" delay={0.25}>
+            <ActionTile to="/dashboard/audit-queue" icon={ClipboardDocumentCheckIcon} title="Approvals" description="See what’s waiting for review." tone="gold" />
+            <ActionTile to="/dashboard/complaints" icon={ChatBubbleLeftRightIcon} title="Complaints" description="Read and track public complaints." />
+            <ActionTile to="/dashboard/audit-trail" icon={FingerPrintIcon} title="Enrollment records log" description="History from the staff enrollment system." tone="ink" />
+          </Stagger>
+        </section>
+      </div>
     </div>
   );
 };

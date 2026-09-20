@@ -1,0 +1,203 @@
+/* ==========================================================================
+   PORTAL THEME
+   Applied by adding the `portal` class to <html> (see usePortalTheme). It
+   re-maps the gov-* palette to the Ebonyi emerald/gold identity so every
+   existing dashboard page re-themes automatically, and upgrades base
+   components (larger touch targets, softer surfaces) for non-technical
+   operators. The public website never gets this class, so it is unaffected.
+   ========================================================================== */
+html.portal {
+  --color-gov-blue-50:  var(--color-brand-50);
+  --color-gov-blue-100: var(--color-brand-100);
+  --color-gov-blue-200: var(--color-brand-200);
+  --color-gov-blue-300: var(--color-brand-300);
+  --color-gov-blue-400: var(--color-brand-400);
+  --color-gov-blue-500: var(--color-brand-500);
+  --color-gov-blue-600: var(--color-brand-600);
+  --color-gov-blue-700: var(--color-brand-700);
+  --color-gov-blue-800: var(--color-brand-800);
+  --color-gov-blue-900: var(--color-brand-900);
+
+  --color-gov-navy-50:  var(--color-ink-50);
+  --color-gov-navy-100: var(--color-ink-100);
+  --color-gov-navy-200: var(--color-ink-200);
+  --color-gov-navy-300: var(--color-ink-300);
+  --color-gov-navy-400: var(--color-ink-400);
+  --color-gov-navy-500: var(--color-ink-500);
+  --color-gov-navy-600: var(--color-ink-600);
+  --color-gov-navy-700: var(--color-ink-700);
+  --color-gov-navy-800: var(--color-ink-800);
+  --color-gov-navy-900: var(--color-ink-900);
+
+  --color-gov-focus: var(--color-brand-400);
+  font-size: 16px;
+}
+
+html.portal body {
+  font-family: var(--font-ui);
+  background-color: #f5f8f6;
+  background-image:
+    radial-gradient(60rem 32rem at 100% -8%, rgb(31 163 90 / 0.07), transparent 60%),
+    radial-gradient(44rem 26rem at -6% 108%, rgb(212 154 31 / 0.06), transparent 60%);
+  background-attachment: fixed;
+  color: var(--color-ink-800);
+}
+html.portal a:not(.btn) { color: var(--color-brand-700); }
+html.portal a:not(.btn):hover { color: var(--color-brand-800); }
+html.portal ::selection { background: var(--color-brand-600); color: #fff; }
+
+@layer components {
+  html.portal .btn {
+    @apply rounded-xl font-semibold select-none;
+    transition: transform 0.15s ease, box-shadow 0.2s ease, background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  }
+  html.portal .btn:active:not(:disabled) { transform: translateY(1px) scale(0.985); }
+  html.portal .btn-sm { @apply px-3.5 py-2 text-sm; min-height: 2.25rem; }
+  html.portal .btn-md { @apply px-5 py-2.5 text-[0.95rem]; min-height: 2.75rem; }
+  html.portal .btn-lg { @apply px-7 py-3.5 text-base; min-height: 3.25rem; }
+  html.portal .btn-primary {
+    background-image: linear-gradient(180deg, var(--color-brand-500), var(--color-brand-600));
+    background-color: var(--color-brand-600);
+    box-shadow: 0 1px 0 rgb(255 255 255 / 0.18) inset, 0 6px 16px -6px rgb(22 132 72 / 0.55);
+    color: #fff;
+  }
+  html.portal .btn-primary:hover:not(:disabled) {
+    background-image: linear-gradient(180deg, var(--color-brand-600), var(--color-brand-700));
+    box-shadow: 0 1px 0 rgb(255 255 255 / 0.18) inset, 0 10px 22px -8px rgb(22 132 72 / 0.65);
+  }
+  html.portal .btn-secondary {
+    background-color: var(--color-gold-400);
+    color: var(--color-ink-900);
+    box-shadow: 0 6px 16px -8px rgb(212 154 31 / 0.7);
+  }
+  html.portal .btn-secondary:hover:not(:disabled) { background-color: var(--color-gold-500); }
+  html.portal .btn-outline {
+    @apply bg-white;
+    border-color: var(--color-ink-200);
+    color: var(--color-ink-700);
+  }
+  html.portal .btn-outline:hover:not(:disabled) {
+    background-color: var(--color-brand-50);
+    border-color: var(--color-brand-300);
+    color: var(--color-brand-800);
+  }
+  html.portal .btn-ghost { color: var(--color-ink-600); }
+  html.portal .btn-ghost:hover:not(:disabled) { background-color: var(--color-ink-50); color: var(--color-ink-900); }
+  html.portal .btn-danger { @apply bg-red-600 text-white shadow-sm; }
+  html.portal .btn-danger:hover:not(:disabled) { @apply bg-red-700; }
+
+  html.portal .card {
+    @apply rounded-2xl bg-white;
+    border: 1px solid rgb(19 104 59 / 0.09);
+    box-shadow: 0 1px 2px rgb(13 31 27 / 0.04), 0 8px 24px -14px rgb(13 31 27 / 0.12);
+  }
+  html.portal .panel { @apply rounded-2xl; }
+
+  html.portal .input,
+  html.portal .select,
+  html.portal .textarea {
+    @apply rounded-xl px-3.5 py-2.5 text-[0.95rem];
+    min-height: 2.75rem;
+    border-color: var(--color-ink-200);
+    background-color: #fff;
+  }
+  html.portal .textarea { min-height: 6rem; }
+  html.portal .input:hover,
+  html.portal .select:hover,
+  html.portal .textarea:hover { border-color: var(--color-ink-300); }
+  html.portal .input:focus,
+  html.portal .select:focus,
+  html.portal .textarea:focus {
+    border-color: var(--color-brand-500);
+    box-shadow: 0 0 0 4px rgb(31 163 90 / 0.16);
+  }
+
+  html.portal .badge { @apply rounded-full normal-case font-semibold text-xs px-2.5 py-1; letter-spacing: 0; }
+  html.portal .badge-blue { background: var(--color-brand-50); color: var(--color-brand-800); border-color: var(--color-brand-200); }
+  html.portal .badge-green { background: var(--color-brand-100); color: var(--color-brand-800); border-color: var(--color-brand-200); }
+  html.portal .badge-yellow { background: var(--color-gold-100); color: #7a5410; border-color: var(--color-gold-200); }
+  html.portal .badge-gray { background: var(--color-ink-50); color: var(--color-ink-600); border-color: var(--color-ink-100); }
+
+  html.portal .table-head {
+    @apply text-[0.72rem] font-bold uppercase px-5 py-3.5;
+    letter-spacing: 0.08em;
+    background: var(--color-ink-50);
+    color: var(--color-ink-500);
+  }
+  html.portal .table-cell { @apply px-5 py-4 text-[0.92rem]; color: var(--color-ink-700); }
+  html.portal tbody tr:hover { background: rgb(239 251 243 / 0.55); }
+
+  html.portal .alert { @apply rounded-xl; }
+  html.portal .section-label { color: var(--color-brand-700); }
+  html.portal .heading-md,
+  html.portal .heading-sm,
+  html.portal .heading-lg { color: var(--color-ink-900); }
+}
+
+@layer utilities {
+  html.portal .scroll-soft { scrollbar-width: thin; scrollbar-color: var(--color-ink-200) transparent; }
+
+  html.portal :focus-visible { outline: 3px solid rgb(31 163 90 / 0.45); outline-offset: 2px; border-radius: 6px; }
+  html.portal .input:focus-visible,
+  html.portal .select:focus-visible,
+  html.portal .textarea:focus-visible { outline: none; }
+
+  .bg-dots {
+    background-image: radial-gradient(rgb(255 255 255 / 0.13) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+  .bg-grid-soft {
+    background-image:
+      linear-gradient(rgb(255 255 255 / 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(255 255 255 / 0.05) 1px, transparent 1px);
+    background-size: 44px 44px;
+  }
+}
+
+/* Toasts render outside the app root, so they are keyed off html.portal. */
+html.portal .Toastify__toast {
+  border-radius: 14px;
+  font-family: var(--font-ui);
+  font-size: 0.93rem;
+  font-weight: 600;
+  padding: 12px 14px;
+  box-shadow: 0 14px 34px -14px rgb(13 31 27 / 0.35);
+  border: 1px solid rgb(19 104 59 / 0.1);
+}
+/* sit below the fixed top bar instead of covering it */
+html.portal .Toastify__toast-container--top-right { top: 4.75rem; }
+html.portal .Toastify__progress-bar--success { background: var(--color-brand-500); }
+
+/* Article typography — used by the editor canvas and the preview. */
+.article-prose { color: var(--color-ink-800); line-height: 1.8; font-size: 1.05rem; }
+.article-prose h1, .article-prose h2, .article-prose h3 { color: var(--color-ink-900); font-weight: 800; line-height: 1.25; letter-spacing: -0.01em; }
+.article-prose h2 { font-size: 1.5rem; margin: 1.8em 0 0.6em; }
+.article-prose h3 { font-size: 1.2rem; margin: 1.5em 0 0.5em; }
+.article-prose p { margin: 0.9em 0; }
+.article-prose a { color: var(--color-brand-700); text-decoration: underline; text-underline-offset: 3px; }
+.article-prose ul { list-style: disc; padding-left: 1.5em; margin: 0.9em 0; }
+.article-prose ol { list-style: decimal; padding-left: 1.5em; margin: 0.9em 0; }
+.article-prose li { margin: 0.35em 0; }
+.article-prose blockquote { border-left: 4px solid var(--color-gold-400); background: var(--color-gold-50); padding: 0.6em 1em; margin: 1.2em 0; border-radius: 0 10px 10px 0; color: var(--color-ink-700); font-style: italic; }
+.article-prose img { max-width: 100%; height: auto; border-radius: 14px; margin: 1.2em auto; display: block; }
+.article-prose hr { border: 0; border-top: 2px dashed var(--color-ink-100); margin: 2em 0; }
+.article-prose code { background: var(--color-ink-50); padding: 0.15em 0.4em; border-radius: 6px; font-size: 0.9em; }
+.article-prose pre { background: var(--color-ink-900); color: #e6fff1; padding: 1em; border-radius: 12px; overflow-x: auto; }
+.article-prose .ProseMirror-selectednode { outline: 3px solid var(--color-brand-400); outline-offset: 2px; }
+.article-prose .ProseMirror > *:first-child { margin-top: 0; }
+.article-prose .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  color: var(--color-ink-300);
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

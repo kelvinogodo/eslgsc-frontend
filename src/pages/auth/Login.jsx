@@ -1,226 +1,186 @@
-import { useForm } from 'react-hook-form';
-import { useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
+import { AnimatePresence, motion } from 'framer-motion';
+import { EnvelopeIcon, ExclamationTriangleIcon, InformationCircleIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 import api from '../../services/api';
 import useAuth from '../../context/useAuth';
-import Card from '../../components/ui/Card';
-import Input from '../../components/ui/Input';
-import Button from '../../components/ui/Button';
-import Alert from '../../components/ui/Alert';
+import AuthShell from '../../components/portal/AuthShell';
+import PasswordField from '../../components/portal/PasswordField';
+import Spinner from '../../components/ui/Spinner';
 
-const roleRedirectMap = {
-  SUPER_ADMIN: '/dashboard',
-  ADMIN: '/dashboard',
-  MEDIA_ADMIN: '/dashboard/news-editor',
-  AUDIT: '/dashboard/pending-edits'
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const readSessionExpired = () => {
+  try {
+    const flag = sessionStorage.getItem('sessionExpired');
+    if (flag) sessionStorage.removeItem('sessionExpired');
+    return Boolean(flag);
+  } catch {
+    return false;
+  }
 };
 
 const Login = () => {
-  const { login } = useAuth();
+  const { user, login } = useAuth();
   const navigate = useNavigate();
-  const { register, handleSubmit, formState: { errors } } = useForm({
-    defaultValues: {
-      email: '',
-      password: ''
-    }
-  });
-  const [showPassword, setShowPassword] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const location = useLocation();
+
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [touched, setTouched] = useState({});
+  const [submitting, setSubmitting] = useState(false);
+  const [done, setDone] = useState(false);
   const [authError, setAuthError] = useState(null);
-  // Only offer the offline mock-login shortcuts when no real API base URL is
-  // configured — with a real backend connected these mock tokens (fake
-  // "mock-signature", not a real JWT) fail every subsequent request with
-  // 401 once used, which is confusing to hit by accident during real testing.
-  const isDev = import.meta.env.DEV && !import.meta.env.VITE_API_BASE_URL;
+  const [sessionExpired] = useState(readSessionExpired);
+  const [shakeKey, setShakeKey] = useState(0);
+  const isDevOffline = import.meta.env.DEV && !import.meta.env.VITE_API_BASE_URL;
 
-  const mockUsers = useMemo(() => ([
-    {
-      role: 'SUPER_ADMIN',
-      label: 'Super Admin',
-      id: 'super-1',
-      name: 'Super Admin'
-    },
-    {
-      role: 'ADMIN',
-      label: 'Commission Admin',
-      id: 'admin-1',
-      name: 'Admin Officer'
-    },
-    {
-      role: 'MEDIA_ADMIN',
-      label: 'Media Editor',
-      id: 'media-1',
-      name: 'Media Editor'
-    },
-    {
-      role: 'AUDIT',
-      label: 'Audit Reviewer',
-      id: 'audit-1',
-      name: 'Audit Reviewer'
+  const from = location.state?.from?.pathname;
+  const destination = from && from.startsWith('/dashboard') ? from : '/dashboard';
+
+  const errors = {
+    email: !email.trim() ? 'Please enter your email address' : !EMAIL_RE.test(email.trim()) ? 'That doesn’t look like an email address' : '',
+    password: !password ? 'Please enter your password' : ''
+  };
+
+  useEffect(() => { if (authError) setAuthError(null); }, [email, password]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Already signed in? Skip the form.
+  if (user && !done) return <Navigate to={destination} replace />;
+
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    setTouched({ email: true, password: true });
+    if (errors.email || errors.password) {
+      setShakeKey((k) => k + 1);
+      return;
     }
-  ]), []);
-
-  const base64UrlEncode = (obj) =>
-    btoa(JSON.stringify(obj))
-      .replace(/=/g, '')
-      .replace(/\+/g, '-')
-      .replace(/\//g, '_');
-
-  const createMockToken = (user) => {
-    const header = { alg: 'HS256', typ: 'JWT' };
-    const payload = {
-      ...user,
-      exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 30
-    };
-    return `${base64UrlEncode(header)}.${base64UrlEncode(payload)}.mock-signature`;
-  };
-
-  const handleMockLogin = (user) => {
-    const token = createMockToken(user);
-    login(user, token);
-    toast.info(`Logged in as ${user.name}`);
-    const roleDestination = roleRedirectMap[user.role];
-    navigate(roleDestination || '/dashboard', { replace: true });
-  };
-
-  const onSubmit = async (values) => {
-    setIsSubmitting(true);
+    setSubmitting(true);
     setAuthError(null);
-
     try {
-      const response = await api.post('/auth/login', {
-        email: values.email.trim().toLowerCase(),
-        password: values.password
-      });
-
-    login(response.data.user, response.data.token);
-    toast.success('Login successful');
-
-    const roleDestination = roleRedirectMap[response.data.user.role];
-    navigate(roleDestination || '/dashboard', { replace: true });
-  } catch (error) {
-    console.error(error);
-      const message = error.response?.data?.message || 'Unable to sign in. Please check your credentials.';
+      const response = await api.post('/auth/login', { email: email.trim().toLowerCase(), password });
+      setDone(true);
+      login(response.data.user, response.data.token);
+      toast.success(`Welcome back, ${response.data.user.name?.split(' ')[0] || 'friend'}!`);
+      setTimeout(() => navigate(destination, { replace: true }), 650);
+    } catch (error) {
+      let message = 'We couldn’t sign you in. Please check your details and try again.';
+      const status = error.response?.status;
+      if (status === 401) message = 'That email and password don’t match. Please check them and try again.';
+      else if (status === 429) message = 'Too many attempts. Please wait a minute, then try again.';
+      else if (!error.response) message = 'We can’t reach the server. Please check your internet connection and try again.';
       setAuthError(message);
-      toast.error(message);
+      setShakeKey((k) => k + 1);
     } finally {
-      setIsSubmitting(false);
+      setSubmitting(false);
     }
   };
+
+  const showErr = (field) => (touched[field] ? errors[field] : '');
 
   return (
-    <div className="min-h-screen bg-gov-gray-50 flex items-center justify-center py-16 px-4">
-      <Card className="w-full max-w-xl p-8 md:p-10">
-        <div className="mb-8 text-center">
-          <div className="flex justify-center mb-4">
-            <img
-              src="/images/logo/logo.png"
-              alt="ESLGSC"
-              className="h-14 w-14"
+    <AuthShell
+      title="Welcome back"
+      subtitle="Sign in to continue to the Commission’s staff portal."
+      pageTitle="Sign in"
+      footer={<>Don’t have an account? Ask your administrator to send you an invitation.</>}
+    >
+      <AnimatePresence initial={false}>
+        {sessionExpired && !authError && (
+          <motion.div
+            key="expired"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mb-6 overflow-hidden"
+          >
+            <div className="flex items-start gap-3 rounded-2xl bg-gold-50 p-4 text-sm text-gold-600 ring-1 ring-gold-200">
+              <InformationCircleIcon className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
+              <p className="font-semibold text-ink-700">Your session has ended, so we signed you out for safety. Please sign in again to carry on.</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <motion.form
+        key={shakeKey}
+        onSubmit={onSubmit}
+        noValidate
+        className="space-y-5"
+        animate={shakeKey ? { x: [0, -8, 8, -6, 6, 0] } : undefined}
+        transition={{ duration: 0.4 }}
+      >
+        <div>
+          <label htmlFor="email" className="mb-1.5 block text-sm font-bold text-ink-700">Email address</label>
+          <div className="relative">
+            <EnvelopeIcon className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-ink-300" aria-hidden="true" />
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              autoFocus
+              inputMode="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              onBlur={() => setTouched((t) => ({ ...t, email: true }))}
+              aria-invalid={showErr('email') ? 'true' : undefined}
+              className={`input pl-11 ${showErr('email') ? 'border-red-400' : ''}`}
             />
           </div>
-          <h1 className="heading-md mb-2">Sign in to ESLGSC</h1>
-          <p className="text-sm text-gov-gray-600">
-            Enter your credentials to access dashboards and manage services across local governments.
-          </p>
+          {showErr('email') && <p className="mt-1.5 text-sm font-semibold text-red-600" role="alert">{showErr('email')}</p>}
         </div>
 
-        {authError && (
-          <Alert variant="error" className="mb-6">
-            {authError}
-          </Alert>
-        )}
+        <PasswordField
+          label="Password"
+          name="password"
+          autoComplete="current-password"
+          placeholder="Enter your password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          onBlur={() => setTouched((t) => ({ ...t, password: true }))}
+          error={showErr('password')}
+        />
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <Input
-            label="Email Address"
-            type="email"
-            placeholder="you@example.com"
-            autoComplete="email"
-            required
-            error={errors.email?.message}
-            {...register('email', {
-              required: 'Email is required'
-            })}
-          />
-
-          <div>
-            <label className="block text-sm font-medium text-gov-gray-700 mb-1" htmlFor="password">
-              Password<span className="text-red-500 ml-1">*</span>
-            </label>
-            <div className="relative">
-              <input
-                id="password"
-                type={showPassword ? 'text' : 'password'}
-                className={`input pr-12 ${errors.password ? 'border-red-500 focus:ring-red-200' : ''}`}
-                placeholder="Enter your password"
-                autoComplete="current-password"
-                {...register('password', {
-                  required: 'Password is required'
-                })}
-              />
-              <button
-                type="button"
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
-                onClick={() => setShowPassword((prev) => !prev)}
-                className="absolute inset-y-0 right-3 flex items-center text-gov-gray-500 hover:text-gov-blue-600"
-              >
-                {showPassword ? <EyeSlashIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
-              </button>
-            </div>
-            {errors.password && (
-              <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
-            )}
-          </div>
-
-          <div className="flex items-center justify-between text-sm">
-            <label className="inline-flex items-center gap-2 text-gov-gray-600">
-              <input type="checkbox" className="rounded border-gov-gray-300" {...register('rememberMe')} />
-              Keep me signed in
-            </label>
-            <Link to="/contact" className="text-gov-blue-600 hover:text-gov-blue-700">
-              Need help?
-            </Link>
-          </div>
-
-          <Button type="submit" disabled={isSubmitting} size="lg" className="w-full">
-            {isSubmitting ? 'Signing In...' : 'Sign In'}
-          </Button>
-        </form>
-
-        {isDev && (
-          <div className="mt-8 border-t border-gov-gray-200 pt-6">
-            <p className="text-xs uppercase tracking-wide text-gov-gray-500 mb-3">
-              Developer shortcuts (offline)
-            </p>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              {mockUsers.map((user) => (
-                <Button
-                  key={user.role}
-                  type="button"
-                  variant="secondary"
-                  onClick={() => handleMockLogin(user)}
-                >
-                  Enter as {user.label}
-                </Button>
-              ))}
-            </div>
-            <p className="text-xs text-gov-gray-500 mt-3">
-              Use these while the API is offline. Switch roles by selecting a different shortcut.
-            </p>
-          </div>
-        )}
-
-        <div className="mt-6 text-center text-sm text-gov-gray-600">
-          <span>Public user? </span>
-          <Link to="/contact" className="text-gov-blue-600 hover:text-gov-blue-700 font-medium">
-            Reach our support desk
-          </Link>
+        <div className="flex justify-end">
+          <Link to="/forgot-password" className="text-sm font-bold text-brand-700 hover:text-brand-800">Forgot your password?</Link>
         </div>
-      </Card>
-    </div>
+
+        <AnimatePresence>
+          {authError && (
+            <motion.div
+              key="err"
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              role="alert"
+              className="flex items-start gap-3 rounded-2xl bg-red-50 p-4 text-sm ring-1 ring-red-100"
+            >
+              <ExclamationTriangleIcon className="mt-0.5 h-5 w-5 shrink-0 text-red-500" aria-hidden="true" />
+              <p className="font-semibold text-red-700">{authError}</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <button type="submit" disabled={submitting || done} className="btn btn-primary btn-lg w-full">
+          {done ? (
+            <span className="inline-flex items-center gap-2"><CheckCircleIcon className="h-6 w-6" /> Signed in</span>
+          ) : submitting ? (
+            <span className="inline-flex items-center gap-3"><Spinner size="sm" className="[&_svg]:text-white" label="Signing in" /> Signing you in…</span>
+          ) : (
+            'Sign in'
+          )}
+        </button>
+      </motion.form>
+
+      {isDevOffline && (
+        <p className="mt-6 rounded-xl bg-ink-50 p-3 text-xs text-ink-500">
+          Developer note: no <code>VITE_API_BASE_URL</code> is set, so sign-in will call the default hosted API.
+        </p>
+      )}
+    </AuthShell>
   );
 };
 

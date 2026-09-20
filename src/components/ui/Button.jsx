@@ -22,7 +22,8 @@ const Button = forwardRef(({
         primary: 'btn-primary',
         secondary: 'btn-secondary',
         outline: 'btn-outline',
-        ghost: 'btn-ghost'
+        ghost: 'btn-ghost',
+        danger: 'btn-danger'
       }[variant],
       `btn-${size}`,
       className

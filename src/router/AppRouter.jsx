@@ -20,9 +20,11 @@ const Faq = lazy(() => import('../pages/faq/Faq'));
 
 // Auth & error screens (lazy loaded)
 const Login = lazy(() => import('../pages/auth/Login'));
-const Unauthorized = lazy(() => import('../pages/errors/Unauthorized'));
+const ForgotPassword = lazy(() => import('../pages/auth/ForgotPassword'));
 const SetPassword = lazy(() => import('../pages/auth/SetPassword'));
 const ResetPassword = lazy(() => import('../pages/auth/ResetPassword'));
+const Unauthorized = lazy(() => import('../pages/errors/Unauthorized'));
+const NotFound = lazy(() => import('../pages/errors/NotFound'));
 
 // Dashboard Pages (lazy loaded)
 const Dashboard = lazy(() => import('../pages/Dashboard'));
@@ -35,14 +37,26 @@ const EmployeeDetail = lazy(() => import('../pages/Dashboard/Super/EmployeeDetai
 const AuditTrail = lazy(() => import('../pages/Dashboard/Audit/AuditTrail'));
 const NewsEditor = lazy(() => import('../pages/Dashboard/Media/NewsEditor'));
 const Drafts = lazy(() => import('../pages/Dashboard/Media/Drafts'));
+const Announcements = lazy(() => import('../pages/Dashboard/Media/Announcements'));
+const Profile = lazy(() => import('../pages/Dashboard/Account/Profile'));
+const Help = lazy(() => import('../pages/Dashboard/Account/Help'));
 const InviteUser = lazy(() => import('../pages/admin/InviteUser'));
 const UserManagement = lazy(() => import('../pages/admin/UserManagement'));
 
-const LoadingFallback = () => (
-  <div className="flex items-center justify-center min-h-screen">
+const FullPageLoader = () => (
+  <div className="flex min-h-screen items-center justify-center">
     <Loader size="lg" />
   </div>
 );
+
+const screen = (element) => <Suspense fallback={<FullPageLoader />}>{element}</Suspense>;
+
+const EDITORS = ['SUPER_ADMIN', 'ADMIN', 'MEDIA_ADMIN'];
+const REVIEWERS = ['SUPER_ADMIN', 'ADMIN', 'AUDIT'];
+const ADMINS = ['SUPER_ADMIN', 'ADMIN'];
+
+// Page-level role guard. The layout supplies the Suspense boundary for these.
+const guard = (roles, element) => <ProtectedRoute allowedRoles={roles}>{element}</ProtectedRoute>;
 
 const AppRouter = () => {
   return (
@@ -55,34 +69,21 @@ const AppRouter = () => {
         <Route path="/contact" element={<Contact />} />
         <Route path="/development-centers" element={<DcPage />} />
         <Route path="/local-governments" element={<LocalGovernmentPage />} />
-  <Route path="/news-and-updates" element={<NewsPage />} />
-  <Route path="/news-and-updates/:slug" element={<NewsDetailPage />} />
-    <Route path="/gallery" element={<GalleryPage />} />
-    <Route path="/complaints" element={<Complaint />} />
+        <Route path="/news-and-updates" element={<NewsPage />} />
+        <Route path="/news-and-updates/:slug" element={<NewsDetailPage />} />
+        <Route path="/gallery" element={<GalleryPage />} />
+        <Route path="/complaints" element={<Complaint />} />
         <Route path="/faq" element={<Faq />} />
-        <Route path="/set-password" element={<SetPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
       </Route>
 
-      {/* Auth Routes (no layout) */}
-      <Route
-        path="/login"
-        element={(
-          <Suspense fallback={<LoadingFallback />}>
-            <Login />
-          </Suspense>
-        )}
-      />
-      <Route
-        path="/unauthorized"
-        element={(
-          <Suspense fallback={<LoadingFallback />}>
-            <Unauthorized />
-          </Suspense>
-        )}
-      />
+      {/* Sign-in and account screens (full page, no website header/footer) */}
+      <Route path="/login" element={screen(<Login />)} />
+      <Route path="/forgot-password" element={screen(<ForgotPassword />)} />
+      <Route path="/set-password" element={screen(<SetPassword />)} />
+      <Route path="/reset-password" element={screen(<ResetPassword />)} />
+      <Route path="/unauthorized" element={screen(<Unauthorized />)} />
 
-      {/* Dashboard Routes */}
+      {/* Dashboard */}
       <Route
         path="/dashboard"
         element={
@@ -91,117 +92,36 @@ const AppRouter = () => {
           </ProtectedRoute>
         }
       >
-        <Route 
-          index 
-          element={
-            <Suspense fallback={<LoadingFallback />}>
-              <Dashboard />
-            </Suspense>
-          } 
-        />
-        <Route 
-          path="news" 
-          element={
-            <Suspense fallback={<LoadingFallback />}>
-              <NewsModeration />
-            </Suspense>
-          } 
-        />
-        <Route 
-          path="audit-queue" 
-          element={
-            <Suspense fallback={<LoadingFallback />}>
-              <AuditQueue />
-            </Suspense>
-          } 
-        />
-        <Route 
-          path="complaints" 
-          element={
-            <Suspense fallback={<LoadingFallback />}>
-              <Complaints />
-            </Suspense>
-          } 
-        />
-        <Route 
-          path="activity-log" 
-          element={
-            <Suspense fallback={<LoadingFallback />}>
-              <ActivityLog />
-            </Suspense>
-          } 
-        />
-        <Route path="settings" element={<div className="p-6">Settings (Coming Soon)</div>} />
-        <Route
-          path="employees"
-          element={
-            <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'ADMIN', 'LGA']}>
-              <Suspense fallback={<LoadingFallback />}>
-                <Employees />
-              </Suspense>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="employees/:employeeId"
-          element={
-            <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'ADMIN', 'LGA']}>
-              <Suspense fallback={<LoadingFallback />}>
-                <EmployeeDetail />
-              </Suspense>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="audit-trail"
-          element={
-            <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'ADMIN', 'AUDIT']}>
-              <Suspense fallback={<LoadingFallback />}>
-                <AuditTrail />
-              </Suspense>
-            </ProtectedRoute>
-          }
-        />
-          <Route
-            path="admin/invite"
-            element={
-              <ProtectedRoute allowedRoles={[ 'SUPER_ADMIN' ]}>
-                <Suspense fallback={<LoadingFallback />}>
-                  <InviteUser />
-                </Suspense>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="admin/users"
-            element={
-              <ProtectedRoute allowedRoles={[ 'SUPER_ADMIN' ]}>
-                <Suspense fallback={<LoadingFallback />}>
-                  <UserManagement />
-                </Suspense>
-              </ProtectedRoute>
-            }
-          />
-        <Route 
-          path="news-editor/:newsId?" 
-          element={
-            <Suspense fallback={<LoadingFallback />}>
-              <NewsEditor />
-            </Suspense>
-          } 
-        />
-        <Route 
-          path="drafts" 
-          element={
-            <Suspense fallback={<LoadingFallback />}>
-              <Drafts />
-            </Suspense>
-          } 
-        />
-</Route>
+        <Route index element={<Dashboard />} />
+
+        {/* Content */}
+        <Route path="news-editor/:newsId?" element={guard(EDITORS, <NewsEditor />)} />
+        <Route path="drafts" element={guard(EDITORS, <Drafts />)} />
+        <Route path="news" element={guard(ADMINS, <NewsModeration />)} />
+        <Route path="announcements" element={guard(EDITORS, <Announcements />)} />
+
+        {/* People */}
+        <Route path="employees" element={guard(['SUPER_ADMIN', 'ADMIN', 'LGA'], <Employees />)} />
+        <Route path="employees/:employeeId" element={guard(['SUPER_ADMIN', 'ADMIN', 'LGA'], <EmployeeDetail />)} />
+        <Route path="admin/users" element={guard(['SUPER_ADMIN'], <UserManagement />)} />
+        <Route path="admin/invite" element={guard(['SUPER_ADMIN'], <InviteUser />)} />
+
+        {/* Oversight */}
+        <Route path="audit-queue" element={guard(REVIEWERS, <AuditQueue />)} />
+        <Route path="complaints" element={guard(REVIEWERS, <Complaints />)} />
+        <Route path="activity-log" element={guard(REVIEWERS, <ActivityLog />)} />
+        <Route path="audit-trail" element={guard(REVIEWERS, <AuditTrail />)} />
+
+        {/* Account */}
+        <Route path="profile" element={<Profile />} />
+        <Route path="help" element={<Help />} />
+        <Route path="settings" element={<Navigate to="/dashboard/profile" replace />} />
+
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      </Route>
 
       {/* Catch all */}
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={screen(<NotFound />)} />
     </Routes>
   );
 };

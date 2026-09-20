@@ -1,15 +1,24 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
+import { LockClosedIcon } from '@heroicons/react/24/outline';
+import ErrorPage from '../../components/portal/ErrorPage';
+import useAuth from '../../context/useAuth';
 
 const Unauthorized = () => {
+  const { user } = useAuth();
   return (
-    <div className="p-6 text-center">
-      <h1 className="text-2xl font-bold mb-4 text-red-600">Unauthorized Access</h1>
-      <p className="mb-4">You don’t have permission to view this page.</p>
-      <Link to="/login" className="text-blue-600 underline">
-        Return to Login
-      </Link>
-    </div>
+    <ErrorPage
+      code="Access restricted"
+      icon={LockClosedIcon}
+      title="This page isn’t available to you"
+      message="Your account doesn’t have access to this area. If you think it should, please ask your administrator."
+      actions={
+        user ? (
+          <Link to="/dashboard" className="btn btn-primary btn-md">Back to my home page</Link>
+        ) : (
+          <Link to="/login" className="btn btn-primary btn-md">Sign in</Link>
+        )
+      }
+    />
   );
 };
 

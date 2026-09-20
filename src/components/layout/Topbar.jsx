@@ -1,183 +1,190 @@
 import { Fragment, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, Transition } from '@headlessui/react';
-import useAuth from '../../context/useAuth';
+import { useQuery } from '@tanstack/react-query';
 import {
+  Bars3Icon,
   BellIcon,
   UserCircleIcon,
-  Cog6ToothIcon,
-  ArrowRightOnRectangleIcon
+  QuestionMarkCircleIcon,
+  ArrowRightOnRectangleIcon,
+  ChevronRightIcon,
+  ArrowTopRightOnSquareIcon
 } from '@heroicons/react/24/outline';
-import { getInitials } from '../../lib/utils';
-import { useQuery } from '@tanstack/react-query';
+import clsx from 'clsx';
+import useAuth from '../../context/useAuth';
+import Avatar from '../portal/Avatar';
 import { getDashboardNotifications } from '../../services/dashboardService';
+import { getPageMeta, ROLE_LABELS } from '../../lib/navigation';
 
-const Topbar = () => {
+const menuItem = (active) =>
+  clsx(
+    'flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors',
+    active ? 'bg-brand-50 text-brand-800' : 'text-ink-700'
+  );
+
+const Topbar = ({ onMenu }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const meta = getPageMeta(location.pathname);
+
   const { data: metrics } = useQuery({
     queryKey: ['dashboard', 'notifications'],
     queryFn: getDashboardNotifications,
-    refetchInterval: 60_000
+    refetchInterval: 60_000,
+    enabled: ['SUPER_ADMIN', 'ADMIN', 'AUDIT', 'MEDIA_ADMIN'].includes(user?.role)
   });
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-
   const notifications = useMemo(() => {
-    if (!metrics) return [];
     const items = [];
-    if (metrics.pendingAudits) {
+    if (metrics?.pendingAudits && ['SUPER_ADMIN', 'ADMIN', 'AUDIT'].includes(user?.role)) {
       items.push({
         id: 'pending-audits',
-        message: `${metrics.pendingAudits} submission${metrics.pendingAudits > 1 ? 's' : ''} awaiting approval`,
+        message: `${metrics.pendingAudits} item${metrics.pendingAudits > 1 ? 's' : ''} waiting for review`,
         link: '/dashboard/audit-queue'
       });
     }
     return items;
-  }, [metrics]);
-
-  const unreadCount = notifications.length;
+  }, [metrics, user?.role]);
 
   return (
-    <header className="fixed top-0 right-0 left-0 lg:left-64 z-30 bg-white border-b border-gov-gray-200 h-16">
-      <div className="flex items-center justify-between h-full px-6">
-        {/* Left side - could add search or breadcrumbs */}
-        <div className="flex-1">
-          {/* Placeholder for future search or quick actions */}
-        </div>
+    <header className="fixed inset-x-0 top-0 z-30 h-16 border-b border-ink-100 bg-white/85 backdrop-blur-xl lg:left-72">
+      <div className="flex h-full items-center gap-3 px-4 sm:px-6 lg:px-10">
+        <button
+          type="button"
+          onClick={onMenu}
+          aria-label="Open menu"
+          className="-ml-1 rounded-xl p-2.5 text-ink-600 transition-colors hover:bg-ink-50 lg:hidden"
+        >
+          <Bars3Icon className="h-6 w-6" aria-hidden="true" />
+        </button>
 
-        {/* Right side - Notifications & User Menu */}
-        <div className="flex items-center space-x-4">
-          {/* Notifications */}
-          <Menu as="div" className="relative">
-            <Menu.Button
-              className="relative p-2 text-gov-gray-600 hover:text-gov-blue-700 hover:bg-gov-gray-50 rounded-lg transition-colors"
-              aria-label={unreadCount > 0 ? `Notifications. ${unreadCount} unread.` : 'Notifications'}
-              aria-haspopup="true"
-            >
-              <BellIcon className="w-5 h-5" aria-hidden="true" />
-              {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-red-500 px-1 text-xs font-medium text-white" aria-hidden="false" aria-live="polite">
-                  <span className="sr-only">{unreadCount} unread notifications</span>
-                  <span aria-hidden="true">{Math.min(unreadCount, 9)}</span>
-                </span>
+        {/* Where am I? */}
+        <nav aria-label="Breadcrumb" className="flex min-w-0 flex-1 items-center gap-2 text-sm">
+          <Link to="/dashboard" className="hidden font-semibold text-ink-400 hover:text-brand-700 sm:inline">Portal</Link>
+          <ChevronRightIcon className="hidden h-4 w-4 text-ink-300 sm:block" aria-hidden="true" />
+          {meta.trail.map((t) => (
+            <Fragment key={t.href}>
+              <Link to={t.href} className="hidden font-semibold text-ink-400 hover:text-brand-700 sm:inline">{t.name}</Link>
+              <ChevronRightIcon className="hidden h-4 w-4 text-ink-300 sm:block" aria-hidden="true" />
+            </Fragment>
+          ))}
+          <span className="truncate font-extrabold text-ink-900" aria-current="page">{meta.title}</span>
+        </nav>
+
+        <a
+          href="/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="hidden items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-semibold text-ink-500 transition-colors hover:bg-ink-50 hover:text-brand-700 md:inline-flex"
+        >
+          View public site
+          <ArrowTopRightOnSquareIcon className="h-4 w-4" aria-hidden="true" />
+        </a>
+
+        {/* Notifications */}
+        <Menu as="div" className="relative">
+          <Menu.Button
+            className="relative rounded-xl p-2.5 text-ink-600 transition-colors hover:bg-ink-50"
+            aria-label={notifications.length ? `Notifications, ${notifications.length} new` : 'Notifications'}
+          >
+            <BellIcon className="h-6 w-6" aria-hidden="true" />
+            {notifications.length > 0 && (
+              <span className="absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-gold-400 text-[0.65rem] font-extrabold text-ink-900 ring-2 ring-white">
+                {Math.min(notifications.length, 9)}
+              </span>
+            )}
+          </Menu.Button>
+          <Transition
+            as={Fragment}
+            enter="transition ease-out duration-150"
+            enterFrom="opacity-0 translate-y-1 scale-95"
+            enterTo="opacity-100 translate-y-0 scale-100"
+            leave="transition ease-in duration-100"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0 scale-95"
+          >
+            <Menu.Items className="absolute right-0 mt-2 w-80 origin-top-right overflow-hidden rounded-2xl bg-white shadow-2xl shadow-ink-900/15 ring-1 ring-black/5 focus:outline-none">
+              <div className="border-b border-ink-100 px-4 py-3 text-sm font-extrabold text-ink-900">Notifications</div>
+              {notifications.length === 0 ? (
+                <div className="px-4 py-8 text-center">
+                  <p className="text-sm font-semibold text-ink-700">You’re all caught up</p>
+                  <p className="mt-1 text-xs text-ink-400">Nothing needs your attention right now.</p>
+                </div>
+              ) : (
+                notifications.map((n) => (
+                  <Menu.Item key={n.id}>
+                    {({ active }) => (
+                      <button
+                        type="button"
+                        onClick={() => navigate(n.link)}
+                        className={clsx('flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-semibold text-ink-800', active && 'bg-brand-50')}
+                      >
+                        <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-gold-400" />
+                        {n.message}
+                      </button>
+                    )}
+                  </Menu.Item>
+                ))
               )}
-            </Menu.Button>
-            <Transition
-              as={Fragment}
-              enter="transition ease-out duration-100"
-              enterFrom="transform opacity-0 scale-95"
-              enterTo="transform opacity-100 scale-100"
-              leave="transition ease-in duration-75"
-              leaveFrom="transform opacity-100 scale-100"
-              leaveTo="transform opacity-0 scale-95"
-            >
-              <Menu.Items className="absolute right-0 mt-2 w-80 origin-top-right rounded-lg bg-white shadow-lg ring-1 ring-black/5 focus:outline-none">
-                <div className="p-4 border-b border-gov-gray-200">
-                  <h3 className="font-semibold text-gov-gray-900">Notifications</h3>
-                </div>
-                <div className="max-h-64 overflow-y-auto">
-                  {notifications.length === 0 ? (
-                    <div className="p-4 text-sm text-gov-gray-500 text-center">
-                      No notifications
-                    </div>
-                  ) : (
-                    notifications.map((notif) => (
-                      <Menu.Item key={notif.id}>
-                        {({ active }) => (
-                          <button
-                            onClick={() => {
-                              if (notif.link) {
-                                navigate(notif.link);
-                              }
-                            }}
-                            className={`w-full text-left px-4 py-3 border-b border-gov-gray-100 last:border-0 ${
-                              active ? 'bg-gov-gray-50' : ''
-                            }`}
-                          >
-                            <p className="text-sm text-gov-gray-700">{notif.message}</p>
-                          </button>
-                        )}
-                      </Menu.Item>
-                    ))
-                  )}
-                </div>
-              </Menu.Items>
-            </Transition>
-          </Menu>
+            </Menu.Items>
+          </Transition>
+        </Menu>
 
-          {/* User Menu */}
-          <Menu as="div" className="relative">
-            <Menu.Button aria-haspopup="true" className="flex items-center space-x-2 p-2 hover:bg-gov-gray-50 rounded-lg transition-colors">
-              <div className="w-8 h-8 bg-gov-blue-600 text-white rounded-full flex items-center justify-center text-sm font-medium">
-                {user?.name ? getInitials(user.name) : 'U'}
+        {/* Account */}
+        <Menu as="div" className="relative">
+          <Menu.Button className="flex items-center gap-3 rounded-2xl p-1.5 pr-3 transition-colors hover:bg-ink-50" aria-label="Account menu">
+            <Avatar name={user?.name} size="sm" />
+            <span className="hidden text-left leading-tight md:block">
+              <span className="block max-w-[10rem] truncate text-sm font-bold text-ink-900">{user?.name}</span>
+              <span className="block text-xs text-ink-400">{ROLE_LABELS[user?.role]}</span>
+            </span>
+          </Menu.Button>
+          <Transition
+            as={Fragment}
+            enter="transition ease-out duration-150"
+            enterFrom="opacity-0 translate-y-1 scale-95"
+            enterTo="opacity-100 translate-y-0 scale-100"
+            leave="transition ease-in duration-100"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0 scale-95"
+          >
+            <Menu.Items className="absolute right-0 mt-2 w-64 origin-top-right rounded-2xl bg-white p-2 shadow-2xl shadow-ink-900/15 ring-1 ring-black/5 focus:outline-none">
+              <div className="px-3 pb-2 pt-1.5">
+                <p className="truncate text-sm font-extrabold text-ink-900">{user?.name}</p>
+                <p className="truncate text-xs text-ink-400">{user?.email}</p>
               </div>
-              <div className="hidden md:block text-left">
-                <div className="text-sm font-medium text-gov-gray-900">
-                  {user?.name || 'User'}
-                </div>
-                <div className="text-xs text-gov-gray-500 capitalize">
-                  {user?.role?.toLowerCase() || 'Role'}
-                </div>
-              </div>
-            </Menu.Button>
-            <Transition
-              as={Fragment}
-              enter="transition ease-out duration-100"
-              enterFrom="transform opacity-0 scale-95"
-              enterTo="transform opacity-100 scale-100"
-              leave="transition ease-in duration-75"
-              leaveFrom="transform opacity-100 scale-100"
-              leaveTo="transform opacity-0 scale-95"
-            >
-              <Menu.Items className="absolute right-0 mt-2 w-56 origin-top-right rounded-lg bg-white shadow-lg ring-1 ring-black/5 focus:outline-none">
-                <div className="py-1">
-                  <Menu.Item>
-                    {({ active }) => (
-                      <button
-                        className={`${
-                          active ? 'bg-gov-gray-50' : ''
-                        } flex w-full items-center space-x-2 px-4 py-2 text-sm text-gov-gray-700`}
-                      >
-                        <UserCircleIcon className="w-5 h-5" />
-                        <span>Profile</span>
-                      </button>
-                    )}
-                  </Menu.Item>
-                  <Menu.Item>
-                    {({ active }) => (
-                      <button
-                        className={`${
-                          active ? 'bg-gov-gray-50' : ''
-                        } flex w-full items-center space-x-2 px-4 py-2 text-sm text-gov-gray-700`}
-                      >
-                        <Cog6ToothIcon className="w-5 h-5" />
-                        <span>Settings</span>
-                      </button>
-                    )}
-                  </Menu.Item>
-                  <div className="border-t border-gov-gray-200 my-1" />
-                  <Menu.Item>
-                    {({ active }) => (
-                      <button
-                        onClick={handleLogout}
-                        className={`${
-                          active ? 'bg-gov-gray-50' : ''
-                        } flex w-full items-center space-x-2 px-4 py-2 text-sm text-red-600`}
-                      >
-                        <ArrowRightOnRectangleIcon className="w-5 h-5" />
-                        <span>Logout</span>
-                      </button>
-                    )}
-                  </Menu.Item>
-                </div>
-              </Menu.Items>
-            </Transition>
-          </Menu>
-        </div>
+              <div className="my-1 border-t border-ink-100" />
+              <Menu.Item>
+                {({ active }) => (
+                  <button type="button" className={menuItem(active)} onClick={() => navigate('/dashboard/profile')}>
+                    <UserCircleIcon className="h-5 w-5" aria-hidden="true" /> My profile &amp; password
+                  </button>
+                )}
+              </Menu.Item>
+              <Menu.Item>
+                {({ active }) => (
+                  <button type="button" className={menuItem(active)} onClick={() => navigate('/dashboard/help')}>
+                    <QuestionMarkCircleIcon className="h-5 w-5" aria-hidden="true" /> Help &amp; guides
+                  </button>
+                )}
+              </Menu.Item>
+              <div className="my-1 border-t border-ink-100" />
+              <Menu.Item>
+                {({ active }) => (
+                  <button
+                    type="button"
+                    onClick={logout}
+                    className={clsx(menuItem(active), active ? '!bg-red-50 !text-red-700' : '!text-red-600')}
+                  >
+                    <ArrowRightOnRectangleIcon className="h-5 w-5" aria-hidden="true" /> Sign out
+                  </button>
+                )}
+              </Menu.Item>
+            </Menu.Items>
+          </Transition>
+        </Menu>
       </div>
     </header>
   );

@@ -1,82 +1,44 @@
-import Table from '../../ui/Table';
-import Button from '../../ui/Button';
-import Badge from '../../ui/Badge';
+import { ClockIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import { motion } from 'framer-motion';
+import clsx from 'clsx';
 import EmptyState from '../../ui/EmptyState';
 import Skeleton from '../../ui/Skeleton';
-import { formatDate } from '../../../lib/utils';
+import Avatar from '../../portal/Avatar';
+import { describeActivity, activityTone } from '../../../lib/activity';
+import { timeAgo, formatDateTime } from '../../../lib/utils';
+import { EASE } from '../../portal/motionVariants';
 
-const entityVariant = {
-  news: 'green',
-  announcement: 'blue',
-  upload: 'purple',
-  audit: 'yellow'
-};
-
+/** "Who did what, when" — each row reads as a sentence; click for the full details. */
 const ActivityLogTable = ({ entries = [], onSelect, isLoading }) => {
   if (isLoading) {
-    return (
-      <div className="p-4">
-        <Skeleton rows={6} />
-      </div>
-    );
+    return <div className="space-y-3 p-5">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-16 rounded-2xl" />)}</div>;
   }
 
   if (!entries.length) {
-    return (
-      <div className="p-4">
-        <EmptyState title="No activity" description="No activity found for the selected filters." />
-      </div>
-    );
+    return <div className="p-5"><EmptyState icon={ClockIcon} title="No activity found" description="Nothing matches those filters. Try widening the dates or clearing the search." /></div>;
   }
 
   return (
-    <Table>
-      <Table.Head>
-        <Table.Row>
-          <Table.HeaderCell>Action</Table.HeaderCell>
-          <Table.HeaderCell>Entity</Table.HeaderCell>
-          <Table.HeaderCell>Actor</Table.HeaderCell>
-          <Table.HeaderCell>Timestamp</Table.HeaderCell>
-          <Table.HeaderCell className="text-right">Details</Table.HeaderCell>
-        </Table.Row>
-      </Table.Head>
-      <Table.Body>
-        {entries.map((entry) => (
-          <Table.Row key={entry.id}>
-            <Table.Cell>
-              <div className="space-y-1">
-                <p className="font-medium text-gov-gray-900">{entry.action}</p>
-                {entry.details?.notes && (
-                  <p className="text-xs text-gov-gray-500">Notes: {entry.details.notes}</p>
-                )}
-              </div>
-            </Table.Cell>
-            <Table.Cell>
-              <div className="space-y-1">
-                {entry.entityType && (
-                  <Badge variant={entityVariant[entry.entityType] || 'gray'}>
-                    {entry.entityType}
-                  </Badge>
-                )}
-                <p className="text-xs text-gov-gray-500">{entry.entityName || '—'}</p>
-              </div>
-            </Table.Cell>
-            <Table.Cell>
-              <div className="space-y-1">
-                <p className="font-medium text-gov-gray-900">{entry.actorName || 'System'}</p>
-                <p className="text-xs text-gov-gray-500">{entry.actorId || '—'}</p>
-              </div>
-            </Table.Cell>
-            <Table.Cell>{formatDate(entry.timestamp)}</Table.Cell>
-            <Table.Cell className="text-right">
-              <Button size="sm" variant="outline" onClick={() => onSelect?.(entry)}>
-                View
-              </Button>
-            </Table.Cell>
-          </Table.Row>
-        ))}
-      </Table.Body>
-    </Table>
+    <ul className="divide-y divide-ink-100">
+      {entries.map((entry, i) => {
+        const d = describeActivity(entry);
+        return (
+          <motion.li key={entry.id || i} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25, delay: Math.min(i * 0.02, 0.25), ease: EASE }}>
+            <button type="button" onClick={() => onSelect?.(entry)} className="flex w-full items-center gap-4 px-5 py-4 text-left transition-colors hover:bg-brand-50/50">
+              <span className="relative shrink-0">
+                <Avatar name={d.actor} />
+                <span className={clsx('absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full ring-2 ring-white', activityTone(entry))} />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-[0.95rem] leading-snug text-ink-700"><span className="font-extrabold text-ink-900">{d.actor}</span> {d.text}</span>
+                <span className="mt-0.5 block text-xs text-ink-400" title={formatDateTime(entry.timestamp)}>{timeAgo(entry.timestamp)}</span>
+              </span>
+              <ChevronRightIcon className="h-5 w-5 shrink-0 text-ink-300" aria-hidden="true" />
+            </button>
+          </motion.li>
+        );
+      })}
+    </ul>
   );
 };
 

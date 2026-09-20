@@ -1,0 +1,13 @@
+{
+  "name": "Ebonyi State Local Government Service Commission",
+  "short_name": "ESLGSC",
+  "description": "Official portal of the Ebonyi State Local Government Service Commission",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#effbf3",
+  "theme_color": "#168448",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

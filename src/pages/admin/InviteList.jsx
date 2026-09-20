@@ -1,139 +1,96 @@
-import React, { useMemo, useState } from 'react';
-import api from '../../services/api';
-import Button from '../../components/ui/Button';
+import { useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
+import { LinkIcon, ArrowPathIcon, TrashIcon, EnvelopeOpenIcon } from '@heroicons/react/24/outline';
+import SegmentedControl from '../../components/portal/SegmentedControl';
+import ConfirmDialog from '../../components/portal/ConfirmDialog';
+import Badge from '../../components/ui/Badge';
 import EmptyState from '../../components/ui/EmptyState';
 import Skeleton from '../../components/ui/Skeleton';
+import { listInvites, resendInvite, revokeInvite } from '../../services/userService';
+import { timeAgo } from '../../lib/utils';
 
-const InviteList = () => {
-  const [invites, setInvites] = useState([]);
-  const [status, setStatus] = useState('pending'); // pending | expired | accepted | all
-  const [q, setQ] = useState('');
-  const [page, setPage] = useState(1);
-  const [pageSize] = useState(10);
-  const [loading, setLoading] = useState(false);
+const InviteList = ({ className = '' }) => {
+  const queryClient = useQueryClient();
+  const [status, setStatus] = useState('pending');
+  const [toRevoke, setToRevoke] = useState(null);
 
-  const fetchInvites = async () => {
-    setLoading(true);
-    try {
-      const res = await api.get('/auth/invites', { params: { status, q, page, pageSize } });
-      const payload = res.data;
-      if (Array.isArray(payload)) setInvites(payload);
-      else if (payload && Array.isArray(payload.data)) setInvites(payload.data);
-      else setInvites([]);
-    } catch (err) {
-      console.error('Failed to load invites', err);
-      toast.error('Failed to load invites');
-      setInvites([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data, isLoading } = useQuery({ queryKey: ['invites', status], queryFn: () => listInvites({ status, pageSize: 20 }) });
+  const invites = data?.data || [];
+  const refresh = () => queryClient.invalidateQueries({ queryKey: ['invites'] });
 
-  const resend = async (id) => {
-    try {
-      await api.post(`/auth/invites/${id}/resend`);
-      fetchInvites();
-      toast.success('Invite resent');
-    } catch (err) {
-      console.error('resend failed', err);
-      toast.error('Failed to resend invite');
-    }
-  };
-
-  const revoke = async (id) => {
-    try {
-      try {
-        await api.delete(`/auth/invites/${id}`);
-      } catch {
-        await api.post(`/auth/invites/${id}/revoke`);
-      }
-      fetchInvites();
-      toast.success('Invite revoked');
-    } catch (err) {
-      console.error('revoke failed', err);
-      toast.error('Failed to revoke invite');
-    }
-  };
-
-  const computeStatus = (i) => {
-    if (i.acceptedAt) return 'accepted';
-    const exp = i.inviteTokenExpires ? new Date(i.inviteTokenExpires).getTime() : 0;
-    if (exp && exp < Date.now()) return 'expired';
-    return 'invited';
-  };
+  const resend = useMutation({
+    mutationFn: resendInvite,
+    onSuccess: () => { toast.success('Invitation sent again'); refresh(); },
+    onError: () => toast.error('We couldn’t resend that invitation.')
+  });
+  const revoke = useMutation({
+    mutationFn: revokeInvite,
+    onSuccess: () => { toast.success('Invitation cancelled'); setToRevoke(null); refresh(); },
+    onError: () => { setToRevoke(null); toast.error('We couldn’t cancel that invitation.'); }
+  });
 
   const copyLink = async (i) => {
-    // prefer SPA route to avoid redirect hop (backend still redirects old API path)
-    const link = `${window.location.origin}/set-password?token=${i.inviteToken}`;
     try {
-      await navigator.clipboard.writeText(link);
-      toast.success('Invite link copied');
+      await navigator.clipboard.writeText(`${window.location.origin}/set-password?token=${i.inviteToken}`);
+      toast.success('Link copied — you can paste it in a message');
     } catch {
-      toast.error('Failed to copy link');
+      toast.error('We couldn’t copy that. Please try again.');
     }
   };
 
-  const filtered = useMemo(() => invites, [invites]);
-
   return (
-    <div className="mt-8">
-      <div className="flex flex-wrap items-end gap-3 mb-4">
-        <div>
-          <label className="block text-sm font-medium mb-1">Filter</label>
-          <select className="input" value={status} onChange={(e) => { setPage(1); setStatus(e.target.value); }}>
-            <option value="pending">Pending</option>
-            <option value="expired">Expired</option>
-            <option value="accepted">Accepted</option>
-            <option value="all">All</option>
-          </select>
-        </div>
-        <div className="flex-1 min-w-[240px]">
-          <label className="block text-sm font-medium mb-1">Search by email</label>
-          <input className="input w-full" value={q} onChange={(e) => { setPage(1); setQ(e.target.value); }} placeholder="example@domain.com" />
-        </div>
-        <div>
-          <Button variant="secondary" onClick={fetchInvites} disabled={loading}>Refresh</Button>
-        </div>
+    <section className={`card p-6 ${className}`} aria-labelledby="invites-heading">
+      <h2 id="invites-heading" className="flex items-center gap-2 text-lg font-extrabold text-ink-900">
+        <EnvelopeOpenIcon className="h-5 w-5 text-brand-600" aria-hidden="true" /> Invitations
+      </h2>
+      <div className="mt-4">
+        <SegmentedControl size="sm" label="Invitation status" value={status} onChange={setStatus} options={[{ value: 'pending', label: 'Waiting' }, { value: 'expired', label: 'Expired' }, { value: 'accepted', label: 'Joined' }]} />
       </div>
 
-      {loading ? (
-        <div className="animate-pulse text-sm text-gov-gray-500">Loading invites…</div>
-      ) : filtered.length === 0 ? (
-        <div className="text-sm text-gov-gray-500">No pending invites</div>
-      ) : (
-        <ul className="space-y-2">
-          {filtered.map((i) => {
-            const s = computeStatus(i);
-            return (
-              <li key={i.id} className="flex items-center justify-between p-3 border rounded">
-                <div className="min-w-0">
-                  <div className="text-sm font-medium truncate">{i.email}</div>
-                  <div className="text-xs text-gov-gray-500">Expires: {i.inviteTokenExpires ? new Date(i.inviteTokenExpires).toLocaleString() : '—'}</div>
+      <div className="mt-5">
+        {isLoading ? (
+          <Skeleton rows={4} />
+        ) : invites.length === 0 ? (
+          <EmptyState icon={EnvelopeOpenIcon} title={status === 'pending' ? 'No invitations waiting' : 'Nothing here'} description={status === 'pending' ? 'When you invite someone, you can track it here.' : ''} />
+        ) : (
+          <ul className="divide-y divide-ink-100">
+            {invites.map((i) => (
+              <li key={i.id} className="py-3.5">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-bold text-ink-900">{i.email}</p>
+                    <p className="text-xs text-ink-400">
+                      {status === 'accepted' ? `Joined ${timeAgo(i.acceptedAt)}` : i.inviteTokenExpires ? (new Date(i.inviteTokenExpires) > new Date() ? `Link works until ${new Date(i.inviteTokenExpires).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' })}` : 'Link expired') : ''}
+                    </p>
+                  </div>
+                  {status === 'accepted' ? <Badge variant="green">Joined</Badge> : status === 'expired' ? <Badge variant="red">Expired</Badge> : <Badge variant="yellow">Waiting</Badge>}
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className={
-                    s === 'accepted' ? 'px-2 py-0.5 text-xs rounded bg-green-100 text-green-700' :
-                    s === 'expired' ? 'px-2 py-0.5 text-xs rounded bg-red-100 text-red-700' :
-                    'px-2 py-0.5 text-xs rounded bg-amber-100 text-amber-700'
-                  }>
-                    {s}
-                  </span>
-                  <Button variant="ghost" onClick={() => copyLink(i)}>Copy link</Button>
-                  <Button variant="secondary" onClick={() => resend(i.id)}>Resend</Button>
-                  <Button variant="outline" onClick={() => revoke(i.id)}>Revoke</Button>
-                </div>
+                {status !== 'accepted' && (
+                  <div className="mt-2.5 flex flex-wrap gap-2">
+                    <button type="button" onClick={() => resend.mutate(i.id)} disabled={resend.isPending} className="btn btn-outline btn-sm"><ArrowPathIcon className="mr-1.5 h-4 w-4" aria-hidden="true" /> Send again</button>
+                    {status === 'pending' && <button type="button" onClick={() => copyLink(i)} className="btn btn-ghost btn-sm"><LinkIcon className="mr-1.5 h-4 w-4" aria-hidden="true" /> Copy link</button>}
+                    <button type="button" onClick={() => setToRevoke(i)} className="btn btn-ghost btn-sm !text-red-600"><TrashIcon className="mr-1.5 h-4 w-4" aria-hidden="true" /> Cancel</button>
+                  </div>
+                )}
               </li>
-            );
-          })}
-        </ul>
-      )}
-      <div className="mt-4 flex items-center gap-2">
-        <Button variant="outline" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>Prev</Button>
-        <span className="text-sm text-gov-gray-600">Page {page}</span>
-        <Button variant="outline" onClick={() => setPage((p) => p + 1)}>Next</Button>
+            ))}
+          </ul>
+        )}
       </div>
-    </div>
+
+      <ConfirmDialog
+        isOpen={Boolean(toRevoke)}
+        onClose={() => setToRevoke(null)}
+        onConfirm={() => revoke.mutate(toRevoke.id)}
+        loading={revoke.isPending}
+        tone="danger"
+        title="Cancel this invitation?"
+        message={`The link sent to ${toRevoke?.email} will stop working. You can always invite them again.`}
+        confirmLabel="Yes, cancel it"
+        cancelLabel="Keep it"
+      />
+    </section>
   );
 };
 

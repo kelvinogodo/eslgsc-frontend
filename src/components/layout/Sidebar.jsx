@@ -1,183 +1,163 @@
-import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import useAuth from '../../context/useAuth';
-import { getAllNews } from '../../services/newsService';
-import { NEWS_STATUS } from '../../lib/constants';
-import {
-  HomeIcon,
-  UsersIcon,
-  NewspaperIcon,
-  ClipboardDocumentCheckIcon,
-  BellAlertIcon,
-  DocumentTextIcon,
-  Cog6ToothIcon,
-  XMarkIcon,
-  ChatBubbleLeftRightIcon,
-  IdentificationIcon
-} from '@heroicons/react/24/outline';
+import { AnimatePresence, motion } from 'framer-motion';
+import { ArrowRightOnRectangleIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import clsx from 'clsx';
+import useAuth from '../../context/useAuth';
+import { getDashboardNotifications } from '../../services/dashboardService';
+import { navForRole, ROLE_LABELS } from '../../lib/navigation';
+import Logo from '../portal/Logo';
+import Avatar from '../portal/Avatar';
+import { EASE } from '../portal/motionVariants';
 
-const Sidebar = () => {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { user } = useAuth();
-  const location = useLocation();
-
-  // Fetch pending news count for badge
-  const { data: pendingNews = [] } = useQuery({
-    queryKey: ['news', 'pending', 'count'],
-    queryFn: () => getAllNews({ status: NEWS_STATUS.PENDING }),
-    enabled: user?.role === 'SUPER_ADMIN' || user?.role === 'ADMIN'
-  });
-
-  // Role-based navigation
-  const getNavigation = () => {
-    const baseNav = [
-      { name: 'Dashboard', href: '/dashboard', icon: HomeIcon, roles: ['SUPER_ADMIN', 'ADMIN', 'MEDIA_ADMIN', 'AUDIT'] }
-    ];
-
-    const roleSpecificNav = {
-      SUPER_ADMIN: [
-        { name: 'Users', href: '/dashboard/admin/users', icon: UsersIcon },
-        { name: 'Employees', href: '/dashboard/employees', icon: IdentificationIcon },
-        { name: 'News Moderation', href: '/dashboard/news', icon: NewspaperIcon },
-        { name: 'Audit Queue', href: '/dashboard/audit-queue', icon: ClipboardDocumentCheckIcon },
-        { name: 'Complaints', href: '/dashboard/complaints', icon: ChatBubbleLeftRightIcon },
-        { name: 'Activity Log', href: '/dashboard/activity-log', icon: DocumentTextIcon },
-        { name: 'Onboarding Audit Trail', href: '/dashboard/audit-trail', icon: DocumentTextIcon },
-        { name: 'Settings', href: '/dashboard/settings', icon: Cog6ToothIcon },
-        { name: 'Invite User', href: '/dashboard/admin/invite', icon: UsersIcon }
-      ],
-      ADMIN: [
-        { name: 'Employees', href: '/dashboard/employees', icon: IdentificationIcon },
-        { name: 'News Moderation', href: '/dashboard/news', icon: NewspaperIcon },
-        { name: 'Audit Queue', href: '/dashboard/audit-queue', icon: ClipboardDocumentCheckIcon },
-        { name: 'Complaints', href: '/dashboard/complaints', icon: ChatBubbleLeftRightIcon },
-        { name: 'Activity Log', href: '/dashboard/activity-log', icon: DocumentTextIcon },
-        { name: 'Onboarding Audit Trail', href: '/dashboard/audit-trail', icon: DocumentTextIcon }
-      ],
-      MEDIA_ADMIN: [
-        { name: 'News Editor', href: '/dashboard/news-editor', icon: NewspaperIcon },
-        { name: 'My Drafts', href: '/dashboard/drafts', icon: DocumentTextIcon }
-      ],
-      AUDIT: [
-        { name: 'Audit Queue', href: '/dashboard/audit-queue', icon: ClipboardDocumentCheckIcon },
-        { name: 'Complaints', href: '/dashboard/complaints', icon: ChatBubbleLeftRightIcon },
-        { name: 'Activity Log', href: '/dashboard/activity-log', icon: DocumentTextIcon },
-        { name: 'Onboarding Audit Trail', href: '/dashboard/audit-trail', icon: DocumentTextIcon }
-      ],
-      LGA: [
-        { name: 'Employees', href: '/dashboard/employees', icon: IdentificationIcon }
-      ]
-    };
-
-    const userNav = roleSpecificNav[user?.role] || [];
-    return [...baseNav, ...userNav];
-  };
-
-  const navigation = getNavigation();
-
-  const isActive = (href) => location.pathname === href;
-
-  const getBadgeCount = (href) => {
-    if (href === '/dashboard/news' && pendingNews.length > 0) {
-      return pendingNews.length;
-    }
-    return null;
-  };
-
+const NavItem = ({ item, badge, onNavigate }) => {
+  const Icon = item.icon;
   return (
-    <>
-      {/* Mobile menu overlay */}
-      {mobileMenuOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          onClick={() => setMobileMenuOpen(false)}
-        />
-      )}
-
-      {/* Sidebar */}
-      <aside
-        id="main-sidebar"
-        role="complementary"
-        aria-label="Main sidebar"
-        className={clsx(
-          'fixed top-0 left-0 bottom-0 z-50 w-64 bg-white border-r border-gov-gray-200 transform transition-transform duration-300 lg:translate-x-0',
-          mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
-        )}
-      >
-        {/* Logo & Close Button */}
-        <div className="flex items-center justify-between p-6 border-b border-gov-gray-200">
-          <Link to="/dashboard" className="flex items-center space-x-2">
-            <img 
-              src="/images/logo/logo.png" 
-              alt="ESLGSC" 
-              className="h-8 w-8"
-            />
-            <div>
-              <div className="font-bold text-gov-blue-800">ESLGSC</div>
-              <div className="text-xs text-gov-gray-600">Dashboard</div>
-            </div>
-          </Link>
-          
-          <button
-            onClick={() => setMobileMenuOpen(false)}
-            aria-label="Close sidebar"
-            className="lg:hidden text-gov-gray-500 hover:text-gov-gray-700"
+    <NavLink
+      to={item.href}
+      end={item.end}
+      onClick={onNavigate}
+      className="group relative block rounded-xl outline-none"
+    >
+      {({ isActive }) => (
+        <span
+          className={clsx(
+            'relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-[0.93rem] font-semibold transition-colors',
+            isActive ? 'text-brand-800' : 'text-ink-600 group-hover:text-ink-900'
+          )}
+        >
+          {isActive && (
+            <motion.span
+              layoutId="sidebar-active"
+              className="absolute inset-0 rounded-xl bg-brand-50 ring-1 ring-brand-100"
+              transition={{ type: 'spring', stiffness: 400, damping: 34 }}
+            >
+              <span className="absolute left-0 top-2.5 bottom-2.5 w-1 rounded-r-full bg-brand-500" />
+            </motion.span>
+          )}
+          <span
+            className={clsx(
+              'relative flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-all',
+              isActive
+                ? 'bg-brand-600 text-white shadow-md shadow-brand-700/30'
+                : 'bg-ink-50 text-ink-500 group-hover:bg-white group-hover:text-brand-700 group-hover:shadow-sm'
+            )}
           >
-            <XMarkIcon className="w-6 h-6" aria-hidden="true" />
-          </button>
-        </div>
-
-        {/* Navigation */}
-        <nav className="p-4 space-y-1">
-          {navigation.map((item) => {
-            const Icon = item.icon;
-            const badgeCount = getBadgeCount(item.href);
-            return (
-              <Link
-                key={item.name}
-                to={item.href}
-                onClick={() => setMobileMenuOpen(false)}
-                className={clsx(
-                  'flex items-center justify-between px-4 py-3 rounded-lg text-sm font-medium transition-colors',
-                  isActive(item.href)
-                    ? 'bg-gov-blue-50 text-gov-blue-700'
-                    : 'text-gov-gray-700 hover:bg-gov-gray-50 hover:text-gov-blue-700'
-                )}
-              >
-                <div className="flex items-center space-x-3">
-                  <Icon className="w-5 h-5" />
-                  <span>{item.name}</span>
-                </div>
-                {badgeCount && (
-                  <span className="inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none text-white bg-red-600 rounded-full">
-                    {badgeCount}
-                  </span>
-                )}
-              </Link>
-            );
-          })}
-        </nav>
-      </aside>
-
-      {/* Mobile menu button */}
-      <button
-        onClick={() => setMobileMenuOpen(true)}
-        aria-label="Open sidebar menu"
-        aria-controls="main-sidebar"
-        aria-expanded={mobileMenuOpen}
-        className={clsx(
-          'fixed top-4 left-4 z-50 lg:hidden bg-white p-2 rounded-lg shadow-md text-gov-gray-700 hover:text-gov-blue-700',
-          mobileMenuOpen && 'hidden'
-        )}
-      >
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-        </svg>
-      </button>
-    </>
+            <Icon className="h-[1.15rem] w-[1.15rem]" aria-hidden="true" />
+          </span>
+          <span className="relative flex-1 truncate">{item.name}</span>
+          {badge > 0 && (
+            <span className="relative inline-flex min-w-[1.5rem] items-center justify-center rounded-full bg-gold-400 px-2 py-0.5 text-xs font-extrabold text-ink-900">
+              {badge}
+            </span>
+          )}
+        </span>
+      )}
+    </NavLink>
   );
 };
+
+const SidebarBody = ({ onNavigate }) => {
+  const { user, logout } = useAuth();
+  const groups = navForRole(user?.role);
+
+  const { data: counts } = useQuery({
+    queryKey: ['dashboard', 'notifications'],
+    queryFn: getDashboardNotifications,
+    refetchInterval: 60_000,
+    enabled: ['SUPER_ADMIN', 'ADMIN', 'AUDIT', 'MEDIA_ADMIN'].includes(user?.role)
+  });
+
+  return (
+    <div className="flex h-full flex-col">
+      <div className="px-5 pb-4 pt-6">
+        <Logo />
+      </div>
+
+      <nav aria-label="Main navigation" className="scroll-soft flex-1 space-y-5 overflow-y-auto px-3 pb-8 [mask-image:linear-gradient(to_bottom,black_calc(100%-2.5rem),transparent)]">
+        {groups.map((group, gi) => (
+          <div key={group.label || gi}>
+            {group.label && (
+              <p className="mb-1.5 px-3 text-[0.68rem] font-extrabold uppercase tracking-[0.14em] text-ink-400">
+                {group.label}
+              </p>
+            )}
+            <div className="space-y-1">
+              {group.items.map((item) => (
+                <NavItem key={item.href} item={item} badge={item.badge ? counts?.[item.badge] : 0} onNavigate={onNavigate} />
+              ))}
+            </div>
+          </div>
+        ))}
+      </nav>
+
+      <div className="m-3 rounded-2xl bg-gradient-to-br from-brand-800 to-brand-950 p-4 text-white shadow-lg shadow-brand-900/25">
+        <div className="flex items-center gap-3">
+          <Avatar name={user?.name} />
+          <div className="min-w-0">
+            <p className="truncate text-sm font-bold">{user?.name || 'Signed in'}</p>
+            <p className="truncate text-xs text-brand-100/80">{ROLE_LABELS[user?.role] || 'Staff'}</p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={logout}
+          className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-white/20"
+        >
+          <ArrowRightOnRectangleIcon className="h-4 w-4" aria-hidden="true" />
+          Sign out
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const Sidebar = ({ open, onClose }) => (
+  <>
+    {/* Desktop: always visible */}
+    <aside
+      aria-label="Sidebar"
+      className="fixed inset-y-0 left-0 z-40 hidden w-72 border-r border-ink-100 bg-white/95 backdrop-blur lg:block"
+    >
+      <SidebarBody />
+    </aside>
+
+    {/* Mobile: slide-in drawer */}
+    <AnimatePresence>
+      {open && (
+        <>
+          <motion.div
+            key="overlay"
+            className="fixed inset-0 z-40 bg-ink-900/50 backdrop-blur-sm lg:hidden"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            aria-hidden="true"
+          />
+          <motion.aside
+            key="drawer"
+            aria-label="Sidebar"
+            className="fixed inset-y-0 left-0 z-50 w-[19rem] max-w-[85vw] bg-white shadow-2xl lg:hidden"
+            initial={{ x: '-100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '-100%' }}
+            transition={{ duration: 0.3, ease: EASE }}
+          >
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close menu"
+              className="absolute right-3 top-4 z-10 rounded-xl p-2 text-ink-500 hover:bg-ink-50"
+            >
+              <XMarkIcon className="h-6 w-6" aria-hidden="true" />
+            </button>
+            <SidebarBody onNavigate={onClose} />
+          </motion.aside>
+        </>
+      )}
+    </AnimatePresence>
+  </>
+);
 
 export default Sidebar;

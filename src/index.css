@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./styles/portal.css";
 
 @theme {
   --font-sans: "Montserrat", "Open Sans", "Lato", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
@@ -58,6 +59,66 @@
   --color-gov-gray-900: #111827;
 
   --color-gov-focus: #26c6da;
+}
+
+/* Portal brand tokens — the Ebonyi seal's emerald green and gold, plus a deep
+   "ink" green for text and dark surfaces. `static` so they are always emitted
+   (the .portal theme below references them via var()). */
+@theme static {
+  --font-ui: "Plus Jakarta Sans", "Montserrat", "Open Sans", "Segoe UI", sans-serif;
+
+  --color-brand-50:  #effbf3;
+  --color-brand-100: #d7f5e1;
+  --color-brand-200: #b0eac5;
+  --color-brand-300: #7ad9a1;
+  --color-brand-400: #3fc07a;
+  --color-brand-500: #1fa35a;
+  --color-brand-600: #168448;
+  --color-brand-700: #13683b;
+  --color-brand-800: #115231;
+  --color-brand-900: #0d3f27;
+  --color-brand-950: #062418;
+
+  --color-gold-50:  #fdf9ec;
+  --color-gold-100: #faf0cb;
+  --color-gold-200: #f5e197;
+  --color-gold-300: #eecb5f;
+  --color-gold-400: #e6b53a;
+  --color-gold-500: #d49a1f;
+  --color-gold-600: #b57816;
+
+  --color-ink-50:  #f2f6f4;
+  --color-ink-100: #e1eae6;
+  --color-ink-200: #c3d4cd;
+  --color-ink-300: #93b0a5;
+  --color-ink-400: #5f8779;
+  --color-ink-500: #3d6a5a;
+  --color-ink-600: #2c5245;
+  --color-ink-700: #22413a;
+  --color-ink-800: #17302a;
+  --color-ink-900: #0d1f1b;
+
+  --animate-shimmer: shimmer 1.6s infinite;
+  --animate-float-slow: float-slow 9s ease-in-out infinite;
+  --animate-float-slower: float-slow 13s ease-in-out infinite reverse;
+  --animate-fade-up: fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-pop: pop 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes shimmer {
+  100% { transform: translateX(100%); }
+}
+@keyframes float-slow {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(14px, -22px, 0) scale(1.06); }
+}
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes pop {
+  from { opacity: 0; transform: scale(0.94); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 :root {

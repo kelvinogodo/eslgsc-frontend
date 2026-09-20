@@ -1,12 +1,14 @@
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import useAuth from '../context/useAuth';
 
 const ProtectedRoute = ({ children, allowedRoles, requiredPermissions }) => {
   const { user, hasPermission } = useAuth();
+  const location = useLocation();
 
   if (!user) {
-    return <Navigate to="/login" replace />;
+    // Remember where they were headed so sign-in can take them straight back.
+    return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
   if (requiredPermissions && requiredPermissions.length > 0) {

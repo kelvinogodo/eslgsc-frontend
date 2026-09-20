@@ -103,13 +103,26 @@ export const AuthProvider = ({ children }) => {
     delete api.defaults.headers.common['Authorization'];
   };
 
+  // Merge changes (e.g. a new display name) into the signed-in user and persist them.
+  const updateUser = (patch) => {
+    setUser((prev) => {
+      const next = { ...(prev || {}), ...patch };
+      try {
+        localStorage.setItem('user', JSON.stringify(next));
+      } catch {
+        // storage unavailable — in-memory update still applies
+      }
+      return next;
+    });
+  };
+
   const hasPermission = (perm) => {
     if (!perm) return true;
     return Array.isArray(permissions) && permissions.includes(perm);
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, permissions, hasPermission, login, logout }}>
+    <AuthContext.Provider value={{ user, token, permissions, hasPermission, login, logout, updateUser }}>
       {!loading && children}
     </AuthContext.Provider>
   );

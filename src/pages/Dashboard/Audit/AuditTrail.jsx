@@ -1,110 +1,65 @@
-import { useEffect, useState, useCallback } from 'react';
-import { toast } from 'react-toastify';
-import Card from '../../../components/ui/Card';
-import Input from '../../../components/ui/Input';
-import Select from '../../../components/ui/Select';
-import Button from '../../../components/ui/Button';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { FingerPrintIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
+import PageHeader from '../../../components/portal/PageHeader';
 import AuditTrailTable from '../../../components/dashboard/auditTrail/AuditTrailTable';
 import AuditTrailDetailModal from '../../../components/dashboard/auditTrail/AuditTrailDetailModal';
+import Pagination from '../../../components/ui/Pagination';
 import { getAuditTrail, getAuditTrailFilterOptions } from '../../../services/auditTrailService';
+import { describeTrailAction } from '../../../lib/activity';
+
+const PAGE_SIZE = 25;
+const ENTITY_LABEL = { employees: 'Staff records', users: 'Enrollment accounts' };
 
 const AuditTrail = () => {
-  const [entries, setEntries] = useState([]);
-  const [meta, setMeta] = useState({ total: 0, page: 1, limit: 50 });
-  const [filterOptions, setFilterOptions] = useState({ actions: [], entityTypes: [] });
   const [action, setAction] = useState('');
   const [entityType, setEntityType] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [selectedEntry, setSelectedEntry] = useState(null);
-  const pageSize = 50;
+  const [selected, setSelected] = useState(null);
 
-  useEffect(() => {
-    getAuditTrailFilterOptions()
-      .then(setFilterOptions)
-      .catch((err) => console.error('Failed to load audit trail filter options', err));
-  }, []);
+  const { data: options = { actions: [], entityTypes: [] } } = useQuery({ queryKey: ['auditTrail', 'options'], queryFn: getAuditTrailFilterOptions, staleTime: 10 * 60 * 1000 });
 
-  const fetchEntries = useCallback(async () => {
-    setLoading(true);
-    try {
-      const params = { page, limit: pageSize };
-      if (action) params.action = action;
-      if (entityType) params.entity_type = entityType;
-      if (startDate) params.startDate = startDate;
-      if (endDate) params.endDate = endDate;
+  const params = { page, limit: PAGE_SIZE, ...(action && { action }), ...(entityType && { entity_type: entityType }), ...(startDate && { startDate }), ...(endDate && { endDate: `${endDate}T23:59:59` }) };
+  const { data, isLoading, isFetching } = useQuery({ queryKey: ['auditTrail', params], queryFn: () => getAuditTrail(params), placeholderData: (prev) => prev });
 
-      const res = await getAuditTrail(params);
-      setEntries(res.data || []);
-      setMeta(res.meta || { total: 0, page, limit: pageSize });
-    } catch (err) {
-      console.error('Failed to load audit trail', err);
-      toast.error('Failed to load Smart Onboarding audit trail');
-      setEntries([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [action, entityType, startDate, endDate, page]);
-
-  useEffect(() => { fetchEntries(); }, [fetchEntries]);
-
-  const totalPages = Math.max(1, Math.ceil((meta.total || 0) / pageSize));
+  const entries = data?.data || [];
+  const total = data?.meta?.total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const hasFilters = Boolean(action || entityType || startDate || endDate);
+  const on = (setter) => (v) => { setter(v); setPage(1); };
+  const reset = () => { setAction(''); setEntityType(''); setStartDate(''); setEndDate(''); setPage(1); };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gov-gray-900">Onboarding Audit Trail</h1>
-        <p className="text-gov-gray-600 mt-1">
-          Read-only view of the Smart Onboarding system&apos;s own action log — enrollments, verifications, logins.
-        </p>
+    <div>
+      <PageHeader icon={FingerPrintIcon} title="Enrollment Records Log" description="The history kept by the separate staff enrollment system — sign-ins, new enrolments, verifications and changes. This is a read-only view." />
+
+      <div className="card mb-5 p-4 sm:p-5">
+        <div className="grid gap-3 lg:grid-cols-[repeat(2,minmax(0,1fr))_repeat(2,minmax(0,0.7fr))_auto]">
+          <select aria-label="Filter by what happened" value={action} onChange={(e) => on(setAction)(e.target.value)} className="select">
+            <option value="">Everything that happened</option>
+            {options.actions.map((a) => <option key={a} value={a}>{describeTrailAction(a)}</option>)}
+          </select>
+          <select aria-label="Filter by what it was about" value={entityType} onChange={(e) => on(setEntityType)(e.target.value)} className="select">
+            <option value="">Anything</option>
+            {options.entityTypes.map((t) => <option key={t} value={t}>{ENTITY_LABEL[t] || t}</option>)}
+          </select>
+          <input type="date" value={startDate} onChange={(e) => on(setStartDate)(e.target.value)} className="input" aria-label="From date" />
+          <input type="date" value={endDate} onChange={(e) => on(setEndDate)(e.target.value)} className="input" aria-label="To date" />
+          <button type="button" onClick={reset} disabled={!hasFilters} className="btn btn-ghost btn-md">Clear</button>
+        </div>
       </div>
 
-      <Card className="p-6 space-y-4">
-        <div className="grid gap-4 lg:grid-cols-[1fr_1fr_1fr_1fr]">
-          <Select label="Action" value={action} onChange={(e) => { setPage(1); setAction(e.target.value); }}>
-            <option value="">All actions</option>
-            {filterOptions.actions.map((a) => (
-              <option key={a} value={a}>{a}</option>
-            ))}
-          </Select>
-          <Select label="Entity" value={entityType} onChange={(e) => { setPage(1); setEntityType(e.target.value); }}>
-            <option value="">All entities</option>
-            {filterOptions.entityTypes.map((e) => (
-              <option key={e} value={e}>{e}</option>
-            ))}
-          </Select>
-          <Input label="From" type="date" value={startDate} onChange={(e) => { setPage(1); setStartDate(e.target.value); }} />
-          <Input label="To" type="date" value={endDate} onChange={(e) => { setPage(1); setEndDate(e.target.value); }} />
-        </div>
-        <div className="flex justify-end">
-          <Button
-            variant="ghost"
-            onClick={() => { setAction(''); setEntityType(''); setStartDate(''); setEndDate(''); setPage(1); }}
-          >
-            Clear filters
-          </Button>
-        </div>
-      </Card>
-
-      <Card className="p-0">
-        <AuditTrailTable entries={entries} isLoading={loading} onSelect={setSelectedEntry} />
-      </Card>
-
-      <div className="flex items-center gap-2">
-        <Button variant="outline" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>Prev</Button>
-        <span className="text-sm text-gov-gray-600">
-          Page {meta.page || page} of {totalPages} &middot; {meta.total || 0} total
-        </span>
-        <Button variant="outline" disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>Next</Button>
+      <div className="mb-3 flex items-center justify-between text-sm font-semibold text-ink-500" aria-live="polite">
+        <span>{isLoading ? 'Loading…' : `${total.toLocaleString()} ${total === 1 ? 'record' : 'records'}`}</span>
+        {isFetching && !isLoading && <ArrowPathIcon className="h-4 w-4 animate-spin text-ink-300" aria-label="Updating" />}
       </div>
 
-      <AuditTrailDetailModal
-        entry={selectedEntry}
-        isOpen={Boolean(selectedEntry)}
-        onClose={() => setSelectedEntry(null)}
-      />
+      <div className="card"><AuditTrailTable entries={entries} isLoading={isLoading} onSelect={setSelected} /></div>
+      {totalPages > 1 && <Pagination className="mt-6" currentPage={page} totalPages={totalPages} onPageChange={setPage} />}
+
+      <AuditTrailDetailModal entry={selected} isOpen={Boolean(selected)} onClose={() => setSelected(null)} />
     </div>
   );
 };

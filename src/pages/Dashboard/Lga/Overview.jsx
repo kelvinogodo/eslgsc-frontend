@@ -1,61 +1,68 @@
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { IdentificationIcon } from '@heroicons/react/24/outline';
-import Card from '../../../components/ui/Card';
-import useAuth from '../../../context/useAuth';
+import { IdentificationIcon, InformationCircleIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import DashboardHero from '../../../components/portal/DashboardHero';
+import { heroButton } from '../../../components/portal/heroStyles';
+import StatCard from '../../../components/portal/StatCard';
+import ActionTile from '../../../components/portal/ActionTile';
+import { Stagger } from '../../../components/portal/motion';
 import { getEmployees } from '../../../services/employeeService';
 
 const LgaOverview = () => {
-  const { user } = useAuth();
-
-  const { data: employeesRes, isLoading } = useQuery({
+  const { data: res, isLoading } = useQuery({
     queryKey: ['employees', 'lga-scoped', 'count'],
     queryFn: () => getEmployees({ limit: 1 }),
     staleTime: 5 * 60 * 1000
   });
 
-  const total = employeesRes?.meta?.total ?? 0;
-  const warning = employeesRes?.warning;
-  const scope = employeesRes?.scope;
+  const scope = res?.scope;
+  const warning = res?.warning;
 
   return (
-    <div className="space-y-6">
-      <header>
-        <h1 className="heading-md">LGA Dashboard</h1>
-        <p className="text-gov-gray-600 mt-1">
-          Welcome, {user?.name || 'LGA Official'}.
-        </p>
-      </header>
+    <div>
+      <DashboardHero
+        message={
+          scope?.lgaName
+            ? `Here’s a view of the staff posted to ${scope.lgaName}.`
+            : 'Welcome to your local government workspace.'
+        }
+      >
+        <Link to="/dashboard/employees" className={heroButton}>
+          <MagnifyingGlassIcon className="h-5 w-5" aria-hidden="true" /> Look up staff
+        </Link>
+      </DashboardHero>
 
       {warning && (
-        <Card className="p-4 bg-amber-50 border border-amber-200">
-          <p className="text-sm text-amber-800">{warning}</p>
-        </Card>
+        <div className="mb-6 flex items-start gap-3 rounded-2xl bg-gold-50 p-4 ring-1 ring-gold-200">
+          <InformationCircleIcon className="mt-0.5 h-5 w-5 shrink-0 text-gold-600" aria-hidden="true" />
+          <p className="text-sm font-semibold text-ink-700">{warning}</p>
+        </div>
       )}
 
-      <Link to="/dashboard/employees">
-        <Card className="p-6 hover:shadow-lg transition-shadow cursor-pointer max-w-sm">
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-gov-blue-100 rounded-lg flex items-center justify-center">
-              <IdentificationIcon className="w-6 h-6 text-gov-blue-600" />
-            </div>
-          </div>
-          <div className="text-3xl font-bold text-gov-gray-900 mb-1">
-            {isLoading ? (
-              <div className="h-8 w-24 bg-gov-gray-100 rounded animate-pulse" />
-            ) : (
-              String(total)
-            )}
-          </div>
-          <div className="text-sm text-gov-gray-600">
-            Employees{scope?.lgaName ? ` in ${scope.lgaName}` : ''}
-          </div>
-        </Card>
-      </Link>
+      <Stagger className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3" delay={0.1}>
+        <StatCard
+          label={scope?.lgaName ? `Staff in ${scope.lgaName}` : 'Staff records'}
+          hint="Enrolled in the system"
+          value={res?.meta?.total ?? 0}
+          loading={isLoading}
+          icon={IdentificationIcon}
+          href="/dashboard/employees"
+          cta="Browse"
+        />
+      </Stagger>
 
-      {scope?.note && (
-        <p className="text-xs text-gov-gray-500 max-w-lg">{scope.note}</p>
-      )}
+      <div className="mt-8 max-w-xl">
+        <h2 className="mb-3 text-lg font-extrabold text-ink-900">What would you like to do?</h2>
+        <Stagger className="space-y-3" delay={0.2}>
+          <ActionTile to="/dashboard/employees" icon={IdentificationIcon} title="Browse staff records" description="Search by name or file number." />
+        </Stagger>
+        {scope?.note && (
+          <p className="mt-5 flex items-start gap-2 text-xs leading-relaxed text-ink-400">
+            <InformationCircleIcon className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+            {scope.note}
+          </p>
+        )}
+      </div>
     </div>
   );
 };
