@@ -219,9 +219,7 @@ const EmployeeDetail = () => {
               <Field label="Time in service" value={service ? humanSpan(service) : null} />
               <Field label="Confirmation" value={fmtDate(emp.date_of_confirmation)} />
               <Field label="Present appointment" value={fmtDate(emp.date_of_present_appointment)} />
-              <Field label="Conversion" value={fmtDate(emp.date_of_conversion)} />
-              <Field label="Last transfer" value={fmtDate(emp.date_of_transfer)} />
-              <Field label="Pension number" value={emp.pension_number} />
+              <Field label="Conversion" value={fmtDate(emp.date_of_conversion || emp.date_of_transfer)} />
             </Section>
 
             <Section icon={MapPinIcon} title="Contact">
