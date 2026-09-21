@@ -25,11 +25,11 @@ export const getEmployeeByEmployeeId = async (employeeId) => {
  * Fetch the live set of distinct department/LGA-of-origin values present
  * in the employees table, for filter dropdowns. Not a static reference
  * list — the documented department/LGA lists don't match real data.
- * @returns {Promise<{departments: string[], lgas: string[]}>}
+ * @returns {Promise<{departments: string[], lgas: string[], hasUnassigned: boolean}>}
  */
 export const getEmployeeFilterOptions = async () => {
   const res = await api.get('/employees/meta');
-  return res.data ?? { departments: [], lgas: [] };
+  return res.data ?? { departments: [], lgas: [], hasUnassigned: false };
 };
 
 export default { getEmployees, getEmployeeByEmployeeId, getEmployeeFilterOptions };

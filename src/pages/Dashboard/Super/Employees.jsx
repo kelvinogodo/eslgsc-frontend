@@ -78,9 +78,10 @@ const Employees = () => {
             <option value="">Every department</option>
             {options.departments.map((d) => <option key={d} value={d}>{d}</option>)}
           </select>
-          <select aria-label="Filter by local government of origin" value={lga} onChange={(e) => { setLga(e.target.value); setPage(1); }} className="select">
-            <option value="">Every origin LGA</option>
+          <select aria-label="Filter by the local government they are posted to" value={lga} onChange={(e) => { setLga(e.target.value); setPage(1); }} className="select">
+            <option value="">Every local government</option>
             {options.lgas.map((l) => <option key={l} value={l}>{l}</option>)}
+            {options.hasUnassigned && <option value="__other__">Other stations</option>}
           </select>
           <button type="button" onClick={reset} disabled={!filtered} className="btn btn-ghost btn-md">Clear</button>
         </div>
