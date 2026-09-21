@@ -13,13 +13,19 @@ import { fmtDate, daysUntil, humanSpan, span, todayDate } from '../../../lib/ret
 
 const titleCase = (s) => (s || '').trim().toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
 
+const PAGE = 20;
+
 const Retirements = () => {
   const [months, setMonths] = useState(4);
+  // Show the first page of people (and so of photos); load more only on request.
+  const [shown, setShown] = useState(PAGE);
+  const changeMonths = (m) => { setMonths(m); setShown(PAGE); };
   const { data, isLoading, isError } = useQuery({
     queryKey: ['employees', 'retirements', months],
     queryFn: () => getUpcomingRetirements(months)
   });
-  const rows = data?.data ?? [];
+  const allRows = data?.data ?? [];
+  const rows = allRows.slice(0, shown);
   const overdue = data?.meta?.overdue ?? 0;
 
   return (
@@ -32,7 +38,7 @@ const Retirements = () => {
           <SegmentedControl
             label="Look ahead"
             value={months}
-            onChange={setMonths}
+            onChange={changeMonths}
             options={[{ value: 4, label: '4 months' }, { value: 6, label: '6 months' }, { value: 12, label: '12 months' }]}
           />
         }
@@ -48,11 +54,11 @@ const Retirements = () => {
         <div className="space-y-3">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-20 rounded-2xl" />)}</div>
       ) : isError ? (
         <div className="card p-6"><EmptyState title="We couldn’t load this list" description="Please check your connection and try again." /></div>
-      ) : rows.length === 0 ? (
+      ) : allRows.length === 0 ? (
         <div className="card p-6"><EmptyState title="No one is retiring in this period" description={`Nobody reaches 60 years of age or 35 years of service in the next ${months} months.`} /></div>
       ) : (
         <>
-          <p className="mb-3 text-sm font-semibold text-ink-500">{rows.length} {rows.length === 1 ? 'person' : 'people'} retiring in the next {months} months</p>
+          <p className="mb-3 text-sm font-semibold text-ink-500">{allRows.length} {allRows.length === 1 ? 'person' : 'people'} retiring in the next {months} months</p>
           <Stagger className="space-y-3" stagger={0.03}>
             {rows.map((r) => {
               const left = daysUntil(r.retirement_leave_date);
@@ -61,7 +67,7 @@ const Retirements = () => {
                 <Item key={r.employee_id}>
                   <Link to={`/dashboard/employees/${encodeURIComponent(r.employee_id)}`} className="card group flex items-center gap-4 p-4 transition-shadow hover:shadow-lg sm:p-5">
                     {r.photo_url ? (
-                      <img src={r.photo_url} alt="" className="h-14 w-14 shrink-0 rounded-2xl object-cover" loading="lazy" />
+                      <img src={r.photo_url} alt="" className="h-14 w-14 shrink-0 rounded-2xl object-cover" loading="lazy" decoding="async" />
                     ) : (
                       <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-ink-50 text-ink-300"><UserCircleIcon className="h-9 w-9" aria-hidden="true" /></span>
                     )}
@@ -85,6 +91,13 @@ const Retirements = () => {
               );
             })}
           </Stagger>
+          {allRows.length > shown && (
+            <div className="mt-5 text-center">
+              <button type="button" onClick={() => setShown((n) => n + PAGE)} className="btn btn-outline btn-md">
+                Show {Math.min(PAGE, allRows.length - shown)} more ({allRows.length - shown} left)
+              </button>
+            </div>
+          )}
         </>
       )}
     </div>
