@@ -12,6 +12,7 @@ import Skeleton from '../../../components/ui/Skeleton';
 import Pagination from '../../../components/ui/Pagination';
 import useDebouncedValue from '../../../hooks/useDebouncedValue';
 import { getEmployees, getEmployeeFilterOptions } from '../../../services/employeeService';
+import { staffStatus } from '../../../lib/retirement';
 
 const PAGE_SIZE = 20;
 
@@ -24,7 +25,7 @@ const StaffPhoto = ({ emp }) => {
 const StatusBadges = ({ emp }) => (
   <div className="flex flex-wrap gap-1.5">
     {emp.is_verified ? <Badge variant="green">Verified</Badge> : <Badge variant="yellow">Not yet verified</Badge>}
-    {emp.employment_status && emp.employment_status !== 'active' && <Badge variant="gray" className="capitalize">{emp.employment_status}</Badge>}
+    <Badge variant={staffStatus(emp).variant}>{staffStatus(emp).label}</Badge>
   </div>
 );
 

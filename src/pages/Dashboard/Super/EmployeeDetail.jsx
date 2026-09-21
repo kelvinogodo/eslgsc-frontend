@@ -12,7 +12,7 @@ import EmptyState from '../../../components/ui/EmptyState';
 import Skeleton from '../../../components/ui/Skeleton';
 import { Stagger, Item } from '../../../components/portal/motion';
 import { getEmployeeByEmployeeId } from '../../../services/employeeService';
-import { fmtDate, ageFrom, serviceYears, humanSpan, retirementState, BASIS_TEXT } from '../../../lib/retirement';
+import { fmtDate, ageFrom, serviceYears, humanSpan, retirementState, staffStatus, BASIS_TEXT } from '../../../lib/retirement';
 
 const Field = ({ label, value, wide }) => (
   <div className={wide ? 'sm:col-span-2' : ''}>
@@ -186,7 +186,7 @@ const EmployeeDetail = () => {
                 <p className="mt-0.5 font-mono text-sm text-ink-500">{emp.employee_id}</p>
                 <div className="mt-3 flex flex-wrap justify-center gap-2 sm:justify-start">
                   {emp.is_verified ? <Badge variant="green">Verified</Badge> : <Badge variant="yellow">Not yet verified</Badge>}
-                  {emp.employment_status && <Badge variant={emp.employment_status === 'active' ? 'blue' : 'gray'} className="capitalize">{emp.employment_status}</Badge>}
+                  <Badge variant={staffStatus(emp).variant}>{staffStatus(emp).label}</Badge>
                   {emp.grade_level && <Badge variant="gray">Grade level {emp.grade_level}</Badge>}
                 </div>
               </div>

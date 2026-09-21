@@ -69,6 +69,25 @@ export const retirementState = (retirementDate, leaveDate) => {
   };
 };
 
+/**
+ * The status badge for a staff member:
+ *   Active   - in service
+ *   On leave - retirement leave has started (the 3 months before the retirement date)
+ *   Retired  - the retirement date has passed
+ * A status recorded in the enrolment system as deceased/dismissed/resigned/retired takes precedence.
+ */
+export const staffStatus = (emp) => {
+  const recorded = String(emp?.employment_status || '').toLowerCase();
+  if (['deceased', 'dismissed', 'resigned'].includes(recorded)) {
+    return { label: recorded.charAt(0).toUpperCase() + recorded.slice(1), variant: 'gray' };
+  }
+  if (recorded === 'retired') return { label: 'Retired', variant: 'gray' };
+  const date = emp?.retirement_date_calc;
+  if (date && daysUntil(date) < 0) return { label: 'Retired', variant: 'gray' };
+  if (emp?.retirement_leave_date && daysUntil(emp.retirement_leave_date) <= 0) return { label: 'On leave', variant: 'yellow' };
+  return { label: 'Active', variant: 'green' };
+};
+
 export const BASIS_TEXT = {
   age: 'Reaches 60 years of age first',
   service: 'Completes 35 years of service first'
