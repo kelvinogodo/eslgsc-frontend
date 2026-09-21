@@ -1,3 +1,4 @@
+import { sanitizeHtml } from '../../../../lib/sanitize';
 import { CalendarDaysIcon, UserCircleIcon, ClockIcon } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
 import Badge from '../../../ui/Badge';
@@ -34,7 +35,7 @@ const ArticlePreview = ({ form, authorName }) => {
           <span className="inline-flex items-center gap-1.5"><ClockIcon className="h-4 w-4" /> {readingMinutes(words)} min read</span>
         </div>
         {form.summary && <p className="mt-6 border-l-4 border-gold-400 pl-4 text-lg font-medium leading-relaxed text-ink-600">{form.summary}</p>}
-        <div className="article-prose mt-6" dangerouslySetInnerHTML={{ __html: form.content || '<p style="color:#93b0a5">The article text will appear here.</p>' }} />
+        <div className="article-prose mt-6" dangerouslySetInnerHTML={{ __html: sanitizeHtml(form.content) || '<p style="color:#93b0a5">The article text will appear here.</p>' }} />
         {form.tags?.length > 0 && (
           <div className="mt-10 flex flex-wrap gap-2 border-t border-ink-100 pt-6">
             {form.tags.map((t) => <Badge key={t} variant="gray">#{t}</Badge>)}

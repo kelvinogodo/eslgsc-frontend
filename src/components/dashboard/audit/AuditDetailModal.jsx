@@ -1,3 +1,4 @@
+import { sanitizeHtml } from '../../../lib/sanitize';
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { CheckCircleIcon, ArrowUturnLeftIcon, EyeIcon } from '@heroicons/react/24/outline';
@@ -72,7 +73,7 @@ const AuditDetailModal = ({ item, isOpen, onClose, onApprove, onReject, isApprov
                   {article.category && <Badge variant="green">{categoryLabel(article.category)}</Badge>}
                   <h3 className="mt-2 text-2xl font-extrabold leading-tight text-ink-900">{article.title}</h3>
                   {article.summary && <p className="mt-3 border-l-4 border-gold-400 pl-3 font-medium text-ink-600">{article.summary}</p>}
-                  <div className="article-prose mt-4" dangerouslySetInnerHTML={{ __html: article.content || '' }} />
+                  <div className="article-prose mt-4" dangerouslySetInnerHTML={{ __html: sanitizeHtml(article.content || '') }} />
                 </div>
               </article>
             ) : (

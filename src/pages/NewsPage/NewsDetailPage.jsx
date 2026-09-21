@@ -1,3 +1,4 @@
+import { sanitizeHtml } from '../../lib/sanitize';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getNewsBySlug, getPublishedNewsById, getPublishedNews } from '../../services/newsService';
@@ -154,7 +155,7 @@ const NewsDetailPage = () => {
             {/* Article Body */}
             <div 
               className="prose prose-lg max-w-none prose-headings:text-gov-navy-900 prose-headings:font-bold prose-headings:uppercase prose-headings:tracking-tight prose-p:text-gov-gray-700 prose-p:leading-relaxed prose-strong:text-gov-navy-900 prose-a:text-gov-blue-600 prose-img:rounded-none border-b border-gov-gray-100 pb-12"
-              dangerouslySetInnerHTML={{ __html: article.content }} 
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(article.content) }} 
             />
 
             {/* Source Attribution */}
