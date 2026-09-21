@@ -15,5 +15,5 @@ export const listInvites = async (params = {}) => {
   const res = await api.get('/auth/invites', { params });
   return res.data ?? { data: [], meta: { total: 0 } };
 };
-export const resendInvite = (id) => api.post(`/auth/invites/${id}/resend`).then((r) => r.data);
+export const resendInvite = (id, options = {}) => api.post(`/auth/invites/${id}/resend`, options).then((r) => r.data);
 export const revokeInvite = (id) => api.delete(`/auth/invites/${id}`).then((r) => r.data);

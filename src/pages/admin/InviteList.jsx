@@ -32,8 +32,11 @@ const InviteList = ({ className = '' }) => {
 
   const copyLink = async (i) => {
     try {
-      await navigator.clipboard.writeText(`${window.location.origin}/set-password?token=${i.inviteToken}`);
-      toast.success('Link copied — you can paste it in a message');
+      // Links are stored only as a hash, so this makes a fresh one (the earlier link stops working).
+      const { link } = await resendInvite(i.id, { sendEmail: false });
+      await navigator.clipboard.writeText(link);
+      toast.success('New link copied — paste it in a message. It works for 24 hours.');
+      refresh();
     } catch {
       toast.error('We couldn’t copy that. Please try again.');
     }
