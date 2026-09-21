@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { SITE } from '../../lib/siteInfo';
 import { 
   EnvelopeIcon, 
   PhoneIcon, 
@@ -13,9 +14,8 @@ const Footer = () => {
       title: 'News & Media',
       links: [
         { name: 'Latest News', href: '/news-and-updates' },
-        { name: 'Press Releases', href: '/news-and-updates?category=press-releases' },
         { name: 'Photo Gallery', href: '/gallery' },
-        { name: 'Announcements', href: '/news-and-updates?category=announcements' }
+        { name: 'Announcements', href: '/announcements' }
       ]
     },
     {
@@ -54,8 +54,7 @@ const Footer = () => {
               </div>
             </div>
             <p className="text-sm text-gov-gray-300 leading-relaxed">
-              Ebonyi State Local Government Service Commission is committed to fostering transparency, 
-              excellence, and grassroots development across all 13 Local Government Areas.
+              Official website of the Ebonyi State Local Government Service Commission.
             </p>
           </div>
 
@@ -79,25 +78,31 @@ const Footer = () => {
           ))}
         </div>
 
-        {/* Contact Info Row */}
-        <div className="border-t border-gov-navy-800 mt-16 pt-12">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="flex items-start space-x-3 text-sm text-gov-gray-300">
-              <MapPinIcon className="w-5 h-5 flex-shrink-0 text-gov-cyan-500" />
-              <span>
-                Local Government Service Commission Complex, Abakaliki, Ebonyi State
-              </span>
-            </div>
-            <div className="flex items-center space-x-3 text-sm text-gov-gray-300">
-              <PhoneIcon className="w-5 h-5 flex-shrink-0 text-gov-cyan-500" />
-              <span>+234 (0) 803 555 0101</span>
-            </div>
-            <div className="flex items-center space-x-3 text-sm text-gov-gray-300">
-              <EnvelopeIcon className="w-5 h-5 flex-shrink-0 text-gov-cyan-500" />
-              <span>ebonyistatelgsc@gmail.com</span>
+        {/* Contact Info Row: only what the Commission has confirmed (lib/siteInfo.js) */}
+        {(SITE.address || SITE.phone || SITE.email) && (
+          <div className="border-t border-gov-navy-800 mt-16 pt-12">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {SITE.address && (
+                <div className="flex items-start space-x-3 text-sm text-gov-gray-300">
+                  <MapPinIcon className="w-5 h-5 flex-shrink-0 text-gov-cyan-500" />
+                  <span>{SITE.address}</span>
+                </div>
+              )}
+              {SITE.phone && (
+                <div className="flex items-center space-x-3 text-sm text-gov-gray-300">
+                  <PhoneIcon className="w-5 h-5 flex-shrink-0 text-gov-cyan-500" />
+                  <span>{SITE.phone}</span>
+                </div>
+              )}
+              {SITE.email && (
+                <div className="flex items-center space-x-3 text-sm text-gov-gray-300">
+                  <EnvelopeIcon className="w-5 h-5 flex-shrink-0 text-gov-cyan-500" />
+                  <a href={`mailto:${SITE.email}`} className="text-gov-gray-300 hover:text-white">{SITE.email}</a>
+                </div>
+              )}
             </div>
           </div>
-        </div>
+        )}
 
         {/* Bottom Bar */}
         <div className="border-t border-gov-navy-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gov-gray-400">

@@ -15,7 +15,7 @@ Object.assign(breadcrumbNames, {
   '/news-and-updates': 'News & Updates',
   '/news-and-updates/:slug': 'News',
   '/gallery': 'Gallery',
-  '/services': 'Services',
+  '/announcements': 'Announcements',
   '/development-centers': 'Development Centers',
   '/local-governments': 'Local Governments',
   '/contact': 'Contact',

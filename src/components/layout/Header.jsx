@@ -12,9 +12,8 @@ const navigation = [
     href: '/news-and-updates',
     children: [
       { name: 'Latest News', href: '/news-and-updates' },
-      { name: 'Press Releases', href: '/news-and-updates?category=press-releases' },
-      { name: 'Announcements', href: '/news-and-updates?category=announcements' },
-      { name: 'Gallery', href: '/gallery' }
+      { name: 'Announcements', href: '/announcements' },
+      { name: 'Photo Gallery', href: '/gallery' }
     ]
   },
   { 

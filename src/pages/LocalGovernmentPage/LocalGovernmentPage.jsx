@@ -1,181 +1,65 @@
 import { Link } from 'react-router-dom';
-import Card from '../../components/ui/Card';
-import Button from '../../components/ui/Button';
-import {
-  BuildingOffice2Icon,
-  ChevronRightIcon,
-  MapIcon,
-  MapPinIcon
-} from '@heroicons/react/24/outline';
-
-const zones = [
-  { 
-    id: 'north', 
-    label: 'Ebonyi North',
-    lgas: [
-      { name: 'Abakaliki', headquarters: 'Abakaliki', devCentres: 4, priority: 'Urban Infrastructure & Digital Governance' },
-      { name: 'Ebonyi', headquarters: 'Ugbodo', devCentres: 3, priority: 'Agricultural Development' },
-      { name: 'Izzi', headquarters: 'Iboko', devCentres: 3, priority: 'Land & Rural Development' },
-      { name: 'Ohaukwu', headquarters: 'Ezzamgbo', devCentres: 3, priority: 'Trade & Administrative Support' }
-    ]
-  },
-  { 
-    id: 'central', 
-    label: 'Ebonyi Central',
-    lgas: [
-      { name: 'Ezza North', headquarters: 'Ebonyi', devCentres: 3, priority: 'Civic Engagement & Youth Support' },
-      { name: 'Ezza South', headquarters: 'Onueke', devCentres: 3, priority: 'Healthcare & Education' },
-      { name: 'Ikwo', headquarters: 'Onuebonyi Echara', devCentres: 4, priority: 'Administrative Innovation & ICT' },
-      { name: 'Ishielu', headquarters: 'Ezillo', devCentres: 3, priority: 'Infrastructure & Road Maintenance' }
-    ]
-  },
-  { 
-    id: 'south', 
-    label: 'Ebonyi South',
-    lgas: [
-      { name: 'Afikpo North', headquarters: 'Afikpo', devCentres: 2, priority: 'Tourism & Citizen Services' },
-      { name: 'Afikpo South', headquarters: 'Nguzu Edda', devCentres: 2, priority: 'Community Development' },
-      { name: 'Ivo', headquarters: 'Isiaka', devCentres: 2, priority: 'Public Service & Health' },
-      { name: 'Ohaozara', headquarters: 'Obiozara', devCentres: 2, priority: 'Water, Sanitation & Reform' },
-      { name: 'Onicha', headquarters: 'Isu', devCentres: 2, priority: 'SME & Social Inclusion' }
-    ]
-  }
-];
+import { useQuery } from '@tanstack/react-query';
+import { BuildingOffice2Icon, MapPinIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
+import EmptyState from '../../components/ui/EmptyState';
+import Skeleton from '../../components/ui/Skeleton';
+import { getDirectory } from '../../services/directoryService';
 
 const LocalGovernmentPage = () => {
+  const { data, isLoading, isError } = useQuery({ queryKey: ['public', 'directory'], queryFn: getDirectory, staleTime: 30 * 60 * 1000 });
+  const headquarters = data?.headquarters ?? [];
+  const centres = data?.centres ?? [];
+
   return (
     <div className="bg-gov-gray-50/30 min-h-screen pb-20">
-      {/* Directory Masthead */}
       <header className="page-banner bg-gov-navy-900 text-white pt-10 pb-8 md:pt-12 md:pb-10 border-b-4 border-gov-cyan-500 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('/images/logo/logo.png')] bg-no-repeat bg-right-top opacity-5 grayscale pointer-events-none translate-x-1/4 -translate-y-1/4 scale-150" />
         <div className="container-custom relative z-10">
           <div className="max-w-3xl space-y-4">
-            <span className="inline-block px-3 py-1 bg-gov-green-600 text-white text-[10px] font-bold uppercase tracking-widest rounded-sm">
-              Official Directory
+            <span className="inline-block px-3 py-1 bg-gov-cyan-500 text-gov-navy-900 text-[10px] font-bold uppercase tracking-widest rounded-sm">
+              Local Government Directory
             </span>
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tight">Local Governments</h1>
-            <p className="text-xl text-white/80 leading-relaxed max-w-2xl">
-              Directory of the 13 Local Government Areas (LGAs) in Ebonyi State. EBSLGSC provides regulatory oversight and administrative support across all jurisdictions.
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Local Governments</h1>
+            <p className="text-lg text-white/80 leading-relaxed max-w-2xl">
+              The local government headquarters where Commission staff are posted, listed as recorded in the Commission’s staff records.
             </p>
           </div>
         </div>
       </header>
 
-      <div className="container-custom py-12 lg:py-16">
-        <div className="grid lg:grid-cols-[300px_1fr] gap-12 items-start">
-          {/* Sidebar Context */}
-          <aside className="lg:sticky lg:top-8 w-full self-start">
-            <div className="space-y-10">
-            <div className="space-y-4">
-              <h3 className="text-sm font-bold uppercase tracking-[0.2em] text-gov-navy-900 border-b border-gov-gray-200 pb-2">
-                Oversight Authority
-              </h3>
-              <p className="text-sm text-gov-gray-600 leading-relaxed">
-                The Local Government Service Commission is mandated to manage administrative services and service standards across all 13 LGAs.
-              </p>
-              <ul className="space-y-3">
-                <li className="flex items-start gap-3 text-sm text-gov-gray-700">
-                  <div className="mt-1 w-1.5 h-1.5 rounded-full bg-gov-green-600 shrink-0" />
-                  Official Postings & Gazettes
-                </li>
-                <li className="flex items-start gap-3 text-sm text-gov-gray-700">
-                  <div className="mt-1 w-1.5 h-1.5 rounded-full bg-gov-green-600 shrink-0" />
-                  Performance Audits
-                </li>
-                <li className="flex items-start gap-3 text-sm text-gov-gray-700">
-                  <div className="mt-1 w-1.5 h-1.5 rounded-full bg-gov-green-600 shrink-0" />
-                  Administrative Reforms
-                </li>
-              </ul>
+      <div className="container-custom py-12">
+        {isLoading ? (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-xl" />)}</div>
+        ) : isError || headquarters.length === 0 ? (
+          <EmptyState title="The directory isn’t available right now" description="Please try again in a little while." />
+        ) : (
+          <div className="space-y-10">
+            <p className="text-gov-gray-600">
+              <strong className="text-gov-navy-900">{headquarters.length}</strong> local government headquarters
+              {centres.length > 0 && <> and <strong className="text-gov-navy-900">{centres.length}</strong> development centres are on record.</>}
+            </p>
+
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {headquarters.map((h) => (
+                <div key={`${h.name}-${h.location}`} className="rounded-xl border border-gov-gray-200 bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-gold-400 hover:shadow-md">
+                  <div className="flex items-start gap-3">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-700"><BuildingOffice2Icon className="h-5 w-5" aria-hidden="true" /></span>
+                    <div className="min-w-0">
+                      <h2 className="font-bold text-gov-navy-900">{h.name}</h2>
+                      <p className="mt-1 flex items-center gap-1.5 text-sm text-gov-gray-600"><MapPinIcon className="h-4 w-4 shrink-0 text-gov-gray-400" aria-hidden="true" /> Headquarters: {h.location}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
 
-            <Card className="bg-gov-navy-900 text-white p-6 rounded-none shadow-none border-none">
-              <h4 className="text-xs font-bold text-gov-green-500 uppercase tracking-widest mb-2">Public Enquiries</h4>
-              <p className="text-xs text-white/70 leading-relaxed mb-4">
-                Enquiries regarding specific LGA services or identity verification can be directed to our central desk.
-              </p>
-              <a href="mailto:ebonyistatelgsc@gmail.com" className="text-sm font-bold hover:underline underline-offset-4">
-                ebonyistatelgsc@gmail.com
-              </a>
-            </Card>
-            </div>
-          </aside>
-
-          {/* Directory Main */}
-          <div className="space-y-16">
-            {zones.map((zone) => (
-              <section key={zone.id} className="space-y-6">
-                <div className="flex items-center gap-4">
-                  <h2 className="text-2xl font-bold text-gov-navy-900">{zone.label}</h2>
-                  <div className="h-px flex-1 bg-gov-gray-200" />
-                </div>
-                
-                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
-                  {zone.lgas.map((lga) => (
-                    <article key={lga.name} className="group bg-white border border-gov-gray-200 p-6 flex flex-col xl:flex-row xl:items-center justify-between gap-6 hover:border-gov-blue-300 hover:shadow-md transition-all">
-                      <div className="space-y-4 xl:space-y-1">
-                        <div className="flex flex-col xl:flex-row xl:items-center gap-2 xl:gap-4">
-                          <h3 className="text-xl font-bold text-gov-navy-900">{lga.name}</h3>
-                          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-gov-gray-400 uppercase tracking-widest">
-                            <MapPinIcon className="w-3 h-3" />
-                            HQ: {lga.headquarters}
-                          </span>
-                        </div>
-                        <div className="flex flex-wrap gap-x-6 gap-y-2">
-                          <div className="flex items-center gap-2 text-xs font-medium text-gov-gray-500">
-                            <MapIcon className="w-4 h-4 text-gov-blue-500" />
-                            <span>{lga.devCentres} Development Centres</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-xs font-medium text-gov-gray-500">
-                            <BuildingOffice2Icon className="w-4 h-4 text-gov-blue-500" />
-                            <span>Priority: {lga.priority}</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="shrink-0">
-                        <Button
-                          as={Link}
-                          to={`/contact?lga=${lga.name.toLowerCase()}`}
-                          variant="outline"
-                          size="sm"
-                          className="rounded-none w-full xl:w-auto uppercase text-[10px] tracking-widest font-bold border-gov-gray-200 group-hover:border-gov-blue-600 group-hover:text-gov-blue-600"
-                        >
-                          Contact Office
-                          <ChevronRightIcon className="ml-2 w-3 h-3" />
-                        </Button>
-                      </div>
-                    </article>
-                  ))}
-                </div>
-              </section>
-            ))}
-
-            {/* General Information Block */}
-            <section className="bg-white border border-gov-gray-200 p-8 lg:p-12 space-y-8">
-              <div className="max-w-2xl space-y-4">
-                <h2 className="text-2xl font-bold text-gov-navy-900">Directory Information</h2>
-                <p className="text-gov-gray-600 leading-relaxed">
-                  This directory provides an overview of the administrative structure of Local Government Areas in Ebonyi State. Data is updated based on official gazettes and administrative directives from the Commission.
-                </p>
+            {centres.length > 0 && (
+              <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-brand-50 p-6 ring-1 ring-brand-100">
+                <p className="max-w-xl text-sm text-gov-gray-700">See every development centre with its location.</p>
+                <Link to="/development-centers" className="btn btn-primary btn-md">Development centres <ArrowRightIcon className="ml-2 h-4 w-4" aria-hidden="true" /></Link>
               </div>
-              
-              <div className="grid md:grid-cols-2 gap-8 pt-8 border-t border-gov-gray-100">
-                <div className="space-y-3">
-                  <h4 className="text-sm font-bold text-gov-navy-900 uppercase tracking-widest">Public Accountability</h4>
-                  <p className="text-sm text-gov-gray-500 leading-relaxed">
-                    Monthly performance metrics and administrative audits for all LGAs are maintained by the Commission to ensure transparency in local governance.
-                  </p>
-                </div>
-                <div className="space-y-3">
-                  <h4 className="text-sm font-bold text-gov-navy-900 uppercase tracking-widest">Development Partners</h4>
-                  <p className="text-sm text-gov-gray-500 leading-relaxed">
-                    Collaborative projects between LGAs and international partners (USAID, World Bank, etc.) are coordinated through the central EBSLGSC Planning Directorate.
-                  </p>
-                </div>
-              </div>
-            </section>
+            )}
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

@@ -23,27 +23,6 @@ export const AUDIT_STATUS = {
   REJECTED: 'rejected'
 };
 
-export const SERVICE_CATEGORIES = [
-  { value: 'seminars', label: 'Workshops & Training' },
-  { value: 'grants', label: 'Grants & Community Funding' },
-  { value: 'programs', label: 'Public Governance Programmes' },
-  { value: 'advocacy', label: 'Advocacy & Public Outreach' },
-  { value: 'policy', label: 'Policies & Circulars' },
-  { value: 'documentation', label: 'Official Documents' }
-];
-
-export const DEPARTMENTS = [
-  'Administration & General Services',
-  'Finance & Accounts',
-  'Institutional Development',
-  'Information & Communication Technology',
-  'Legal Services & Compliance',
-  'Planning, Research & Statistics',
-  'Public Relations & Media',
-  'Internal Audit',
-  'Local Government Oversight'
-];
-
 /**
  * Executive leadership profiles
  * Images are stored in public/images/staffs/

@@ -252,61 +252,6 @@ const Complaint = () => {
           </div>
         </div>
       </section>
-
-      {/* Process Timeline */}
-      <section className="container-custom pt-16">
-        <div className="grid gap-8 md:grid-cols-4">
-          {[
-            { step: '01', title: 'Formal Submission', desc: 'The petition is logged through the official intake channel.' },
-            { step: '02', title: 'Initial Review', desc: 'Compliance officers verify the submission and evidence.' },
-            { step: '03', title: 'Internal Review', desc: 'Concerns are routed for internal administrative review.' },
-            { step: '04', title: 'Official Response', desc: 'The Commission issues a formal response or follow-up.' }
-          ].map((item) => (
-            <div key={item.step} className="space-y-3">
-              <span className="text-2xl font-black text-gov-navy-900/10 tracking-tighter">{item.step}</span>
-              <h4 className="text-sm font-bold text-gov-navy-900 uppercase tracking-wide">{item.title}</h4>
-              <p className="text-xs text-gov-gray-500 leading-relaxed">{item.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Alternative Contact & Accountability */}
-      <section className="bg-gov-navy-900 py-20 text-white">
-        <div className="container-custom">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <div className="space-y-6">
-              <div className="inline-block border-l-4 border-gov-green-600 pl-4">
-                <h2 className="text-2xl font-bold uppercase tracking-tight">Direct Administrative Access</h2>
-                <p className="text-sm text-gov-green-500 font-bold uppercase tracking-[0.2em] mt-1">Public Complaints Desk</p>
-              </div>
-              <p className="text-lg text-white/70 leading-relaxed">
-                For complex petitions or matters requiring physical submission of documents, citizens may visit the Complaints Desk at the Commission headquarters. All submissions are reviewed through the official administrative registry.
-              </p>
-              <div className="pt-6 border-t border-white/10 space-y-4">
-                <div className="flex flex-col space-y-1">
-                  <span className="text-[10px] font-bold text-gov-gray-400 uppercase tracking-widest">Office Location</span>
-                  <p className="text-sm font-medium">Local Government Service Commission Complex, Abakaliki, Ebonyi State.</p>
-                </div>
-                <div className="flex flex-col space-y-1">
-                  <span className="text-[10px] font-bold text-gov-gray-400 uppercase tracking-widest">Official Registry Email</span>
-                  <a href="mailto:ebonyistatelgsc@gmail.com" className="text-sm font-medium hover:text-gov-cyan-400 transition-colors">ebonyistatelgsc@gmail.com</a>
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-white/5 border border-white/10 p-8 lg:p-12 space-y-6">
-              <h3 className="text-sm font-bold uppercase tracking-widest text-gov-green-500">Handling Protocol</h3>
-              <p className="text-sm text-white/60 leading-relaxed">
-                Information submitted through this portal is for internal administrative review. Petitions are routed for verification and appropriate administrative action.
-              </p>
-              <p className="text-sm text-white/60 leading-relaxed italic border-l border-white/20 pl-4 font-medium">
-                "Transparency in local governance starts with public accountability and responsive administrative oversight."
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
     </div>
   );
 };

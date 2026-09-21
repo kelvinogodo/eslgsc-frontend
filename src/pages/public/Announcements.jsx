@@ -29,8 +29,8 @@ const Announcements = () => {
     <div className="space-y-16 pb-16">
       <PageHero
         eyebrow="Public updates"
-        title="Announcements for citizens, partners, and local government staff."
-        description="Stay informed about policy notices, recruitment timelines, trainings, and other important updates from EBSLGSC."
+        title="Announcements"
+        description="Notices posted by the Ebonyi State Local Government Service Commission."
         actions={(
           <Button as="a" href="/news-and-updates" variant="outline" size="lg">
             Visit news &amp; updates
@@ -45,7 +45,7 @@ const Announcements = () => {
           </div>
         ) : announcements.length === 0 ? (
           <div className="py-8">
-            <EmptyState title="No announcements" description="No announcements are currently available. Please check back soon." />
+            <EmptyState title="No announcements" description="Nothing has been posted yet." />
           </div>
         ) : (
           <div className="space-y-6">

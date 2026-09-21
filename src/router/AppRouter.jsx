@@ -8,7 +8,7 @@ import Loader from '../components/ui/Loader';
 // Public Pages (lazy loaded)
 const Home = lazy(() => import('../pages/Home'));
 const About = lazy(() => import('../pages/about/About'));
-const Services = lazy(() => import('../pages/Services'));
+const PublicAnnouncements = lazy(() => import('../pages/public/Announcements'));
 const Contact = lazy(() => import('../pages/Contact'));
 const Complaint = lazy(() => import('../pages/complaints/Complaint'));
 const GalleryPage = lazy(() => import('../pages/gallery/GalleryPage'));
@@ -67,7 +67,8 @@ const AppRouter = () => {
       <Route element={<PublicLayout />}>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
-        <Route path="/services" element={<Services />} />
+        <Route path="/announcements" element={<PublicAnnouncements />} />
+        <Route path="/services" element={<Navigate to="/" replace />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/development-centers" element={<DcPage />} />
         <Route path="/local-governments" element={<LocalGovernmentPage />} />
