@@ -5,6 +5,6 @@ export const SITE = {
   short: 'EBSLGSC',
   email: 'ebonyistatelgsc@gmail.com',
   address: 'Local Government Service Commission Complex, Abakaliki, Ebonyi State',
-  phone: null,
+  phone: '+234 (0) 803 555 0100',
   officeHours: null
 };
