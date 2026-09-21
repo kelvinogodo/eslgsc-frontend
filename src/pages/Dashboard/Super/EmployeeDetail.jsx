@@ -194,8 +194,6 @@ const EmployeeDetail = () => {
             </div>
           </Item>
 
-          <RetirementCard emp={emp} />
-
           <div className="grid gap-5 lg:grid-cols-2">
             <Section icon={BriefcaseIcon} title="Work">
               <Field label="Rank" value={titleCase(emp.rank)} />
@@ -219,7 +217,7 @@ const EmployeeDetail = () => {
               <Field label="Time in service" value={service ? humanSpan(service) : null} />
               <Field label="Confirmation" value={fmtDate(emp.date_of_confirmation)} />
               <Field label="Present appointment" value={fmtDate(emp.date_of_present_appointment)} />
-              <Field label="Conversion" value={fmtDate(emp.date_of_conversion || emp.date_of_transfer)} />
+              <Field label="Conversion/transfer of service" value={fmtDate(emp.date_of_conversion || emp.date_of_transfer)} />
             </Section>
 
             <Section icon={MapPinIcon} title="Contact">
@@ -240,6 +238,8 @@ const EmployeeDetail = () => {
             <div className="sm:col-span-2"><dt className="text-xs font-bold uppercase tracking-wide text-ink-400">Qualifications</dt><dd className="mt-2 font-semibold text-ink-900"><Qualifications raw={emp.qualifications} /></dd></div>
             {emp.remark && <Field label="Remark" value={emp.remark} wide />}
           </Section>
+
+          <RetirementCard emp={emp} />
 
           <Section icon={CheckBadgeIcon} title="Enrollment record">
             <Field label="Verification" value={emp.is_verified ? 'Verified' : 'Not yet verified'} />
