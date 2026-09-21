@@ -1,5 +1,5 @@
 # UI/UX Audit - Quick Fix Checklist
-## ESLGSC Frontend - Developer Quick Reference
+## EBSLGSC Frontend - Developer Quick Reference
 
 Use this checklist to track implementation of audit fixes. Check off items as you complete them.
 

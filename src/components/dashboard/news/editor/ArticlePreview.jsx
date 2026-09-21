@@ -29,7 +29,7 @@ const ArticlePreview = ({ form, authorName }) => {
           {form.title || <span className="text-ink-300">Your headline will appear here</span>}
         </h1>
         <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-ink-500">
-          <span className="inline-flex items-center gap-1.5"><UserCircleIcon className="h-4 w-4" /> {authorName || 'ESLGSC'}</span>
+          <span className="inline-flex items-center gap-1.5"><UserCircleIcon className="h-4 w-4" /> {authorName || 'EBSLGSC'}</span>
           <span className="inline-flex items-center gap-1.5"><CalendarDaysIcon className="h-4 w-4" /> {today}</span>
           <span className="inline-flex items-center gap-1.5"><ClockIcon className="h-4 w-4" /> {readingMinutes(words)} min read</span>
         </div>

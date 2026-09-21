@@ -1,4 +1,4 @@
-# ESLGSC API — Server Contracts
+# EBSLGSC API — Server Contracts
 
 This document and the `openapi.yaml` file define the backend endpoints required by the current frontend.
 

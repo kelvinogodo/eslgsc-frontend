@@ -118,7 +118,7 @@ const NewsDetailPage = () => {
               <div className="flex items-center gap-2">
                 <UserIcon className="w-4 h-4 text-gov-green-600" />
                 <span className="text-xs font-bold text-gov-navy-700 uppercase tracking-widest">
-                  {article.authorName || 'ESLGSC Media'}
+                  {article.authorName || 'EBSLGSC Media'}
                 </span>
               </div>
               <div className="bg-gov-navy-900 px-2 py-0.5">
@@ -230,7 +230,7 @@ const NewsDetailPage = () => {
             <div className="p-6 border border-gov-gray-200 bg-gov-gray-50 space-y-3">
               <h4 className="text-[10px] font-bold text-gov-navy-900 uppercase tracking-widest border-b border-gov-gray-200 pb-2">Disclaimer</h4>
               <p className="text-[11px] text-gov-gray-500 leading-relaxed font-medium italic">
-                Official documentation of the ESLGSC. Redistribution permitted only with source citation.
+                Official documentation of the EBSLGSC. Redistribution permitted only with source citation.
               </p>
             </div>
           </aside>

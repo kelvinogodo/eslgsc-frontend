@@ -31,7 +31,7 @@ This document explains how executive profiles with images from `public/images/st
 export const EXECUTIVES = [
   {
     name: 'Chief Romanus Okemini Nwasum',
-    role: 'Chairman Ebonyi State Local Government Service Commission (ESLGSC)',
+    role: 'Chairman Ebonyi State Local Government Service Commission (EBSLGSC)',
     image: '/images/staffs/chief_romanus_okemini_nwasum.jpg'
   },
   // ... 14 more executives

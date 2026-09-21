@@ -96,7 +96,7 @@ const NewsPage = () => {
             </span>
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight">Newsroom</h1>
             <p className="text-xl text-white/80 leading-relaxed max-w-2xl">
-              Official announcements, policy insights, and reform updates from ESLGSC. Stay informed about the latest developments in local governance.
+              Official announcements, policy insights, and reform updates from EBSLGSC. Stay informed about the latest developments in local governance.
             </p>
           </div>
         </div>
@@ -163,7 +163,7 @@ const NewsPage = () => {
                           <img src={article.imageUrl} alt="" className="h-full w-full object-cover grayscale group-hover:grayscale-0 transition-all" />
                         ) : (
                           <div className="h-full w-full bg-gov-gray-100 flex items-center justify-center">
-                            <span className="text-[10px] text-gov-gray-300 font-bold uppercase">ESLGSC</span>
+                            <span className="text-[10px] text-gov-gray-300 font-bold uppercase">EBSLGSC</span>
                           </div>
                         )}
                       </div>
@@ -190,7 +190,7 @@ const NewsPage = () => {
                 <Card className="bg-gov-gray-50 border-gov-gray-200 p-6 rounded-none shadow-none">
                   <h4 className="text-sm font-bold text-gov-navy-900 mb-2 uppercase tracking-wide">Media Enquiries</h4>
                   <p className="text-xs text-gov-gray-600 leading-relaxed mb-4">
-                    Official statements and interview requests for ESLGSC leadership can be directed to the Press Office.
+                    Official statements and interview requests for EBSLGSC leadership can be directed to the Press Office.
                   </p>
                   <a href="mailto:ebonyistatelgsc@gmail.com" className="text-sm font-bold text-gov-blue-600 hover:underline">
                     ebonyistatelgsc@gmail.com
@@ -255,7 +255,7 @@ const NewsPage = () => {
                     />
                   ) : (
                     <div className="h-full w-full bg-gov-navy-900/5 flex items-center justify-center">
-                      <span className="text-gov-navy-200/40 font-bold uppercase tracking-widest text-xs">ESLGSC Release</span>
+                      <span className="text-gov-navy-200/40 font-bold uppercase tracking-widest text-xs">EBSLGSC Release</span>
                     </div>
                   )}
                 </Link>
@@ -303,7 +303,7 @@ const NewsPage = () => {
                 <p className="text-sm text-gov-green-500 font-bold uppercase tracking-[0.2em] mt-1">Press Desk & Public Information</p>
               </div>
               <p className="text-lg text-white/70 leading-relaxed">
-                The ESLGSC Communications Office is the official source for all commission-related statements, policy briefings, and public announcements. We ensure that citizens and partners receive accurate, timely information.
+                The EBSLGSC Communications Office is the official source for all commission-related statements, policy briefings, and public announcements. We ensure that citizens and partners receive accurate, timely information.
               </p>
               <div className="flex flex-wrap gap-4">
                 <Button as="a" href="mailto:ebonyistatelgsc@gmail.com" variant="primary" className="rounded-none bg-gov-green-600 hover:bg-gov-green-700 border-none">

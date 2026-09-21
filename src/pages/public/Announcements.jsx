@@ -30,7 +30,7 @@ const Announcements = () => {
       <PageHero
         eyebrow="Public updates"
         title="Announcements for citizens, partners, and local government staff."
-        description="Stay informed about policy notices, recruitment timelines, trainings, and other important updates from ESLGSC."
+        description="Stay informed about policy notices, recruitment timelines, trainings, and other important updates from EBSLGSC."
         actions={(
           <Button as="a" href="/news-and-updates" variant="outline" size="lg">
             Visit news &amp; updates

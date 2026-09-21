@@ -1,4 +1,4 @@
-# ESLGSC Frontend - Quick Start Guide
+# EBSLGSC Frontend - Quick Start Guide
 
 ## 🚀 Installation & Run
 

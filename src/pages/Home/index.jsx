@@ -58,7 +58,7 @@ const HeroSection = () => (
     <div className="absolute inset-0 opacity-40">
       <img 
         src="/images/hero/hero1.jpg" 
-        alt="ESLGSC Complex" 
+        alt="EBSLGSC Complex" 
         className="kenburns w-full h-full object-cover"
       />
       <div className="absolute inset-0 bg-gradient-to-t from-gov-navy-900/80 via-gov-navy-900/20 to-transparent" />

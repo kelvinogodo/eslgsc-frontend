@@ -1,7 +1,7 @@
 # Commission Frontend
 
 ## Project summary
-`commission-frontend` is a React + Vite single-page application for the ESLGSC portal. It includes public pages and role-restricted dashboard pages that integrate with the backend API.
+`commission-frontend` is a React + Vite single-page application for the EBSLGSC portal. It includes public pages and role-restricted dashboard pages that integrate with the backend API.
 
 ## Problem solved
 This frontend provides one interface for:

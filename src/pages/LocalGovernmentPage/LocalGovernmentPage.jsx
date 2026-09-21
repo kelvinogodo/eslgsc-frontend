@@ -55,7 +55,7 @@ const LocalGovernmentPage = () => {
             </span>
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight">Local Governments</h1>
             <p className="text-xl text-white/80 leading-relaxed max-w-2xl">
-              Directory of the 13 Local Government Areas (LGAs) in Ebonyi State. ESLGSC provides regulatory oversight and administrative support across all jurisdictions.
+              Directory of the 13 Local Government Areas (LGAs) in Ebonyi State. EBSLGSC provides regulatory oversight and administrative support across all jurisdictions.
             </p>
           </div>
         </div>
@@ -169,7 +169,7 @@ const LocalGovernmentPage = () => {
                 <div className="space-y-3">
                   <h4 className="text-sm font-bold text-gov-navy-900 uppercase tracking-widest">Development Partners</h4>
                   <p className="text-sm text-gov-gray-500 leading-relaxed">
-                    Collaborative projects between LGAs and international partners (USAID, World Bank, etc.) are coordinated through the central ESLGSC Planning Directorate.
+                    Collaborative projects between LGAs and international partners (USAID, World Bank, etc.) are coordinated through the central EBSLGSC Planning Directorate.
                   </p>
                 </div>
               </div>

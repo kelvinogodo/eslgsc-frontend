@@ -9,7 +9,7 @@ const Logo = ({ to = '/dashboard', tone = 'dark', size = 'md', subtitle = 'Staff
       <img src="/favicon.svg" alt="" className={clsx(box, 'rounded-xl shadow-md shadow-brand-900/20')} />
       <span className="leading-tight">
         <span className={clsx('block font-extrabold tracking-tight', size === 'lg' ? 'text-2xl' : 'text-lg', tone === 'light' ? 'text-white' : 'text-ink-900')}>
-          ESLGSC
+          EBSLGSC
         </span>
         <span className={clsx('block text-xs font-medium', tone === 'light' ? 'text-brand-100/80' : 'text-ink-500')}>
           {subtitle}
@@ -17,7 +17,7 @@ const Logo = ({ to = '/dashboard', tone = 'dark', size = 'md', subtitle = 'Staff
       </span>
     </span>
   );
-  return to ? <Link to={to} className="inline-flex" aria-label="ESLGSC home">{content}</Link> : content;
+  return to ? <Link to={to} className="inline-flex" aria-label="EBSLGSC home">{content}</Link> : content;
 };
 
 export default Logo;

@@ -29,7 +29,7 @@ const About = () => {
             </span>
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight">About the Commission</h1>
             <p className="text-xl text-white/80 leading-relaxed max-w-2xl">
-              The Ebonyi State Local Government Service Commission (ESLGSC) is the statutory body responsible for the oversight, regulation, and administrative coordination of the Local Government Service across the state.
+              The Ebonyi State Local Government Service Commission (EBSLGSC) is the statutory body responsible for the oversight, regulation, and administrative coordination of the Local Government Service across the state.
             </p>
           </div>
         </div>

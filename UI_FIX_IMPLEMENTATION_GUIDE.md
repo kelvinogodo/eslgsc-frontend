@@ -184,7 +184,7 @@ const NewsDetailPage = () => {
   // TODO: Fetch from API based on id
   const article = {
     id: 1,
-    title: 'ESLGSC Unveils 2025-2027 Strategic Transformation Agenda',
+    title: 'EBSLGSC Unveils 2025-2027 Strategic Transformation Agenda',
     content: `
       <p>The Ebonyi State Local Government Service Commission has launched a comprehensive three-year roadmap focusing on service digitisation, leadership pipelines, and community accountability across all 13 Local Government Areas.</p>
       
@@ -206,7 +206,7 @@ const NewsDetailPage = () => {
     date: 'September 18, 2025',
     category: 'policy',
     image: '/vertexbuilding.png',
-    author: 'ESLGSC Communications Team'
+    author: 'EBSLGSC Communications Team'
   };
 
   return (

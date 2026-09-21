@@ -21,7 +21,7 @@ const navigation = [
     name: 'The Commission', 
     href: '/about',
     children: [
-      { name: 'About ESLGSC', href: '/about' },
+      { name: 'About EBSLGSC', href: '/about' },
       { name: 'Leadership', href: '/about#leadership' },
       { name: 'Departments', href: '/about#departments' }
     ]
@@ -87,7 +87,7 @@ const Header = () => {
       <nav role="navigation" aria-label="Primary navigation" className="container-custom py-2">
         <div className="flex items-center justify-between">
           {/* Logo */}
-                    <Link to="/" className="flex items-center gap-3" aria-label="ESLGSC home">
+                    <Link to="/" className="flex items-center gap-3" aria-label="EBSLGSC home">
             <img
               src="/images/logo/logo.png"
               alt="Ebonyi State seal"
@@ -95,7 +95,7 @@ const Header = () => {
             />
             <div>
               <div className="text-xl font-extrabold text-gov-navy-900 leading-tight tracking-tight">
-                ESLGSC
+                EBSLGSC
               </div>
               <div className="hidden text-xs text-gov-gray-600 sm:block">
                 Ebonyi State LG Service Commission

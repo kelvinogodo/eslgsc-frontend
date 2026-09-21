@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-const SUFFIX = 'ESLGSC Portal';
+const SUFFIX = 'EBSLGSC Portal';
 
 /** Sets the browser tab title for the current page, restoring it on unmount. */
 export default function usePageTitle(title) {

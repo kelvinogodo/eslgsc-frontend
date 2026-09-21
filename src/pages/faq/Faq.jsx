@@ -21,11 +21,11 @@ const faqData = {
   general: [
     {
       question: 'What is the mandate of the Ebonyi State Local Government Service Commission?',
-      answer: 'ESLGSC oversees recruitment, promotion, discipline, training, and welfare of local government staff. We coordinate policy implementation, monitor service delivery outcomes, and support development centres across the 13 LGAs.'
+      answer: 'EBSLGSC oversees recruitment, promotion, discipline, training, and welfare of local government staff. We coordinate policy implementation, monitor service delivery outcomes, and support development centres across the 13 LGAs.'
     },
     {
       question: 'How can I contact the commission for official correspondence?',
-      answer: 'You can reach us via ebonyistatelgsc@gmail.com, call +234 (0) 803 555 0100, or visit the ESLGSC Complex, Abakaliki. Our reception desk is open Monday to Friday, 8:00 AM – 5:00 PM.'
+      answer: 'You can reach us via ebonyistatelgsc@gmail.com, call +234 (0) 803 555 0100, or visit the EBSLGSC Complex, Abakaliki. Our reception desk is open Monday to Friday, 8:00 AM – 5:00 PM.'
     }
   ],
   services: [
@@ -34,7 +34,7 @@ const faqData = {
       answer: 'Yes. Through our 12 development centres we offer leadership, digital service, and community engagement programmes. Officers can register via their HR departments or through the intranet portal.'
     },
     {
-      question: 'How do communities benefit from ESLGSC programmes?',
+      question: 'How do communities benefit from EBSLGSC programmes?',
       answer: 'We coordinate community outreach, service clinics, and transparency forums that bring citizens together with service desk leads. Data gathered feeds into reforms, resource allocation, and improvement plans.'
     }
   ],

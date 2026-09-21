@@ -73,7 +73,7 @@ const galleryItems = [
     id: 8,
     src: '/images/gallery/image8.jpg',
     title: 'Field Monitoring Exercise',
-    description: 'Joint monitoring by ESLGSC and stakeholders to track project delivery.',
+    description: 'Joint monitoring by EBSLGSC and stakeholders to track project delivery.',
     category: 'events'
   },
   {
@@ -94,7 +94,7 @@ const galleryItems = [
     id: 11,
     src: '/images/gallery/image11.jpg',
     title: 'Commission Headquarters',
-    description: 'The ESLGSC complex—nerve centre for policy, HR, and reform initiatives.',
+    description: 'The EBSLGSC complex—nerve centre for policy, HR, and reform initiatives.',
     category: 'infrastructure'
   },
   {
@@ -119,7 +119,7 @@ const GalleryPage = () => {
       <PageHero
         eyebrow="Media Hub"
         title="Stories of transformation from Ebonyi’s local governments."
-        description="Explore photo and video highlights from ESLGSC’s programmes, development centre activities, and community engagements. Each moment captures progress toward a responsive and people-focused public service."
+        description="Explore photo and video highlights from EBSLGSC’s programmes, development centre activities, and community engagements. Each moment captures progress toward a responsive and people-focused public service."
         actions={
           <>
             <Button as="a" href="#collection" size="lg">
@@ -219,7 +219,7 @@ const GalleryPage = () => {
             <div className="flex items-center gap-3">
               <PlayCircleIcon className="w-10 h-10" />
               <div>
-                <h2 className="text-2xl font-semibold">ESLGSC Video Library</h2>
+                <h2 className="text-2xl font-semibold">EBSLGSC Video Library</h2>
                 <p className="text-white/80 text-sm">Documentaries &amp; field stories</p>
               </div>
             </div>
@@ -257,7 +257,7 @@ const GalleryPage = () => {
               </li>
               <li className="flex items-start gap-2">
                 <SparklesIcon className="w-5 h-5 text-gov-blue-500 mt-0.5" />
-                Invite ESLGSC spokespersons for expert commentary and civic education programmes.
+                Invite EBSLGSC spokespersons for expert commentary and civic education programmes.
               </li>
             </ul>
             <Button as="a" href="mailto:ebonyistatelgsc@gmail.com" variant="outline" size="lg">

@@ -21,7 +21,7 @@ const Footer = () => {
     {
       title: 'The Commission',
       links: [
-        { name: 'About ESLGSC', href: '/about' },
+        { name: 'About EBSLGSC', href: '/about' },
         { name: 'Leadership', href: '/about#leadership' },
         { name: 'Departments', href: '/about#departments' }
       ]
@@ -46,11 +46,11 @@ const Footer = () => {
             <div className="flex items-center space-x-3">
               <img 
                 src="/images/logo/logo.png" 
-                alt="ESLGSC Logo" 
+                alt="EBSLGSC Logo" 
                 className="h-14 w-14 shrink-0 object-contain"
               />
               <div className="font-bold text-xl tracking-tight leading-tight">
-                ESLGSC <span className="block text-xs font-normal text-gov-gray-400">Ebonyi State</span>
+                EBSLGSC <span className="block text-xs font-normal text-gov-gray-400">Ebonyi State</span>
               </div>
             </div>
             <p className="text-sm text-gov-gray-300 leading-relaxed">
