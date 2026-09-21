@@ -15,7 +15,7 @@ const today = () => {
   const [y, m, d] = new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Lagos' }).format(new Date()).split('-').map(Number);
   return Date.UTC(y, m - 1, d);
 };
-export const todayDate = () => todayDate();
+export const todayDate = () => new Date(today());
 
 /** Whole years/months/days between two dates, e.g. { years: 3, months: 2, days: 5 }. */
 export const span = (from, to) => {
