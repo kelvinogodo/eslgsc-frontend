@@ -42,8 +42,11 @@ html.portal body {
   background-attachment: fixed;
   color: var(--color-ink-800);
 }
-html.portal a:not(.btn) { color: var(--color-brand-700); }
-html.portal a:not(.btn):hover { color: var(--color-brand-800); }
+/* In the base layer on purpose: an unlayered rule here beat utility classes such as text-white, which left white-on-green links (e.g. the hero's Review approvals button) dark green. */
+@layer base {
+  html.portal a:not(.btn) { color: var(--color-brand-700); }
+  html.portal a:not(.btn):hover { color: var(--color-brand-800); }
+}
 html.portal ::selection { background: var(--color-brand-600); color: #fff; }
 
 @layer components {
