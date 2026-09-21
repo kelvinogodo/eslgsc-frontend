@@ -35,6 +35,7 @@ const ActivityLog = lazy(() => import('../pages/Dashboard/Super/ActivityLog'));
 const Employees = lazy(() => import('../pages/Dashboard/Super/Employees'));
 const EmployeeDetail = lazy(() => import('../pages/Dashboard/Super/EmployeeDetail'));
 const Retirements = lazy(() => import('../pages/Dashboard/Super/Retirements'));
+const RetiredStaff = lazy(() => import('../pages/Dashboard/Super/RetiredStaff'));
 const AuditTrail = lazy(() => import('../pages/Dashboard/Audit/AuditTrail'));
 const NewsEditor = lazy(() => import('../pages/Dashboard/Media/NewsEditor'));
 const Drafts = lazy(() => import('../pages/Dashboard/Media/Drafts'));
@@ -104,6 +105,7 @@ const AppRouter = () => {
         {/* People */}
         <Route path="employees" element={guard(['SUPER_ADMIN', 'ADMIN', 'LGA'], <Employees />)} />
         <Route path="retirements" element={guard(ADMINS, <Retirements />)} />
+        <Route path="retired" element={guard(ADMINS, <RetiredStaff />)} />
         <Route path="employees/:employeeId" element={guard(['SUPER_ADMIN', 'ADMIN', 'LGA'], <EmployeeDetail />)} />
         <Route path="admin/users" element={guard(['SUPER_ADMIN'], <UserManagement />)} />
         <Route path="admin/invite" element={guard(['SUPER_ADMIN'], <InviteUser />)} />

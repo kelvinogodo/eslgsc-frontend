@@ -43,6 +43,12 @@ export const getUpcomingRetirements = async (months = 4) => {
   return res.data ?? { data: [], meta: { months, total: 0, overdue: 0 } };
 };
 
+/** Staff whose retirement date has passed, newest first. { search, page, limit } */
+export const getRetiredStaff = async (params = {}) => {
+  const res = await api.get('/employees/retirements/retired', { params });
+  return res.data ?? { data: [], meta: { total: 0, page: 1, limit: 20 } };
+};
+
 /** Just the count for the notification bell. */
 export const getRetirementSummary = async () => {
   const res = await api.get('/employees/retirements/summary');

@@ -46,7 +46,7 @@ const Retirements = () => {
 
       {overdue > 0 && (
         <div className="mb-5 rounded-2xl border border-gold-200 bg-gold-50 px-5 py-3 text-sm font-semibold text-ink-800">
-          {overdue} active staff {overdue === 1 ? 'is' : 'are'} already past their calculated retirement date. Open a staff record to see the details.
+          {overdue} active staff {overdue === 1 ? 'is' : 'are'} already past their calculated retirement date. <Link to="/dashboard/retired" className="font-extrabold text-brand-700 underline underline-offset-2">See who has already retired</Link>.
         </div>
       )}
 
