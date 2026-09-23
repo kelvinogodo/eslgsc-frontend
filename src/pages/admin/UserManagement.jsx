@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { AnimatePresence, motion } from 'framer-motion';
 import { toast } from 'react-toastify';
-import { UsersIcon, UserPlusIcon, EnvelopeIcon, NoSymbolIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
+import { ArrowPathIcon } from '@heroicons/react/24/outline';
 import useAuth from '../../context/useAuth';
 import PageHeader from '../../components/portal/PageHeader';
 import SearchBox from '../../components/portal/SearchBox';
@@ -18,7 +17,6 @@ import useDebouncedValue from '../../hooks/useDebouncedValue';
 import { ROLE_OPTIONS, roleLabel } from '../../lib/roles';
 import { listUsers, changeUserRole, setUserLga, setUserActive, forceResetPassword } from '../../services/userService';
 import { getLGAs } from '../../services/lgaService';
-import { EASE } from '../../components/portal/motionVariants';
 
 const PAGE_SIZE = 10;
 
@@ -81,19 +79,18 @@ const UserManagement = () => {
   };
 
   const confirmCopy = {
-    role: confirm && { title: 'Change this person’s role?', message: `${confirm.user.name} will become a ${roleLabel(confirm.role)}. What they can see and do will change straight away.`, label: 'Yes, change role', tone: 'primary' },
-    deactivate: confirm && { title: 'Deactivate this account?', message: `${confirm?.user?.name} will be signed out and won’t be able to sign in again until you reactivate them.`, label: 'Yes, deactivate', tone: 'danger' },
-    reactivate: confirm && { title: 'Reactivate this account?', message: `${confirm?.user?.name} will be able to sign in again.`, label: 'Yes, reactivate', tone: 'primary' },
+    role: confirm && { title: 'Change role?', message: `${confirm.user.name} will become a ${roleLabel(confirm.role)}. What they can see and do changes straight away.`, label: 'Change role', tone: 'primary' },
+    deactivate: confirm && { title: 'Deactivate this account?', message: `${confirm?.user?.name} will be signed out and won’t be able to sign in until you reactivate them.`, label: 'Deactivate', tone: 'danger' },
+    reactivate: confirm && { title: 'Reactivate this account?', message: `${confirm?.user?.name} will be able to sign in again.`, label: 'Reactivate', tone: 'primary' },
     reset: confirm && { title: 'Send a password reset?', message: `We’ll email ${confirm?.user?.email} a link to choose a new password.`, label: 'Send email', tone: 'primary' }
   }[confirm?.type] || {};
 
   return (
     <div>
       <PageHeader
-        icon={UsersIcon}
         title="Portal Users"
-        description="Everyone who can sign in to this portal. Change what someone can do, or stop them signing in."
-        actions={<Link to="/dashboard/admin/invite" className="btn btn-primary btn-lg"><UserPlusIcon className="mr-2 h-5 w-5" aria-hidden="true" /> Invite someone</Link>}
+        description="Everyone who can sign in to the portal. Change someone’s role, or deactivate their account."
+        actions={<Link to="/dashboard/admin/invite" className="btn btn-primary btn-md">Invite someone</Link>}
       />
 
       <div className="mb-5 flex flex-wrap items-center gap-3">
@@ -116,24 +113,23 @@ const UserManagement = () => {
         {isLoading ? (
           <div className="p-6"><Skeleton rows={6} /></div>
         ) : users.length === 0 ? (
-          <div className="p-6"><EmptyState icon={UsersIcon} title="No one matches that" description="Try a different search or filter." action={<button type="button" className="btn btn-outline btn-md" onClick={() => { setSearch(''); setRole(''); setStatus('all'); }}>Show everyone</button>} /></div>
+          <div className="p-6"><EmptyState title="No users match" description="Try a different search or filter." action={<button type="button" className="btn btn-outline btn-md" onClick={() => { setSearch(''); setRole(''); setStatus('all'); }}>Show everyone</button>} /></div>
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full">
               <thead>
                 <tr>
                   <th className="table-head">Person</th>
-                  <th className="table-head">What they can do</th>
+                  <th className="table-head">Role</th>
                   <th className="table-head">Status</th>
                   <th className="table-head text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-ink-100">
-                <AnimatePresence initial={false}>
-                  {users.map((u) => {
+                {users.map((u) => {
                     const isMe = u.id === me?.id;
                     return (
-                      <motion.tr key={u.id} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25, ease: EASE }}>
+                      <tr key={u.id}>
                         <td className="table-cell">
                           <div className="flex items-center gap-3">
                             <Avatar name={u.name} />
@@ -172,21 +168,20 @@ const UserManagement = () => {
                         <td className="table-cell">
                           <div className="flex justify-end gap-2">
                             <button type="button" disabled={busy || u.status === 'invited'} onClick={() => setConfirm({ type: 'reset', user: u })} className="btn btn-ghost btn-sm" title="Email a password reset link">
-                              <EnvelopeIcon className="mr-1.5 h-4 w-4" aria-hidden="true" /> Reset password
+                              Reset password
                             </button>
                             {u.status === 'disabled' ? (
                               <button type="button" disabled={busy} onClick={() => setConfirm({ type: 'reactivate', user: u })} className="btn btn-outline btn-sm">Reactivate</button>
                             ) : (
                               <button type="button" disabled={busy || isMe} title={isMe ? 'You can’t deactivate yourself' : ''} onClick={() => setConfirm({ type: 'deactivate', user: u })} className="btn btn-outline btn-sm !text-red-600 hover:!bg-red-50 hover:!border-red-200">
-                                <NoSymbolIcon className="mr-1.5 h-4 w-4" aria-hidden="true" /> Deactivate
+                                Deactivate
                               </button>
                             )}
                           </div>
                         </td>
-                      </motion.tr>
+                      </tr>
                     );
                   })}
-                </AnimatePresence>
               </tbody>
             </table>
           </div>

@@ -11,13 +11,9 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { toast } from 'react-toastify';
 import {
   ArrowLeftIcon,
-  EyeIcon,
-  PencilSquareIcon,
-  PaperAirplaneIcon,
   LockClosedIcon,
   ArrowUturnLeftIcon,
-  CheckIcon,
-  BookmarkSquareIcon
+  CheckIcon
 } from '@heroicons/react/24/outline';
 import clsx from 'clsx';
 import useAuth from '../../../context/useAuth';
@@ -239,18 +235,16 @@ const NewsEditor = () => {
               value={view}
               onChange={setView}
               options={[
-                { value: 'edit', label: 'Write', icon: PencilSquareIcon },
-                { value: 'preview', label: 'Preview', icon: EyeIcon }
+                { value: 'edit', label: 'Write' },
+                { value: 'preview', label: 'Preview' }
               ]}
             />
             {!locked && (
               <>
                 <button type="button" onClick={saveNow} className="btn btn-outline btn-md" title="Save draft (Ctrl+S)">
-                  <BookmarkSquareIcon className="mr-2 h-5 w-5" aria-hidden="true" />
                   <span className="hidden sm:inline">Save draft</span><span className="sm:hidden">Save</span>
                 </button>
                 <button type="button" onClick={() => setConfirmOpen(true)} className="btn btn-primary btn-md">
-                  <PaperAirplaneIcon className="mr-2 h-5 w-5" aria-hidden="true" />
                   {publishes ? 'Publish' : 'Send for review'}
                 </button>
               </>

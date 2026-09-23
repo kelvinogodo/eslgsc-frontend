@@ -36,13 +36,9 @@ html.portal {
 html.portal body {
   font-family: var(--font-ui);
   background-color: #f5f8f6;
-  background-image:
-    radial-gradient(60rem 32rem at 100% -8%, rgb(31 163 90 / 0.07), transparent 60%),
-    radial-gradient(44rem 26rem at -6% 108%, rgb(212 154 31 / 0.06), transparent 60%);
-  background-attachment: fixed;
   color: var(--color-ink-800);
 }
-/* In the base layer on purpose: an unlayered rule here beat utility classes such as text-white, which left white-on-green links (e.g. the hero's Review approvals button) dark green. */
+/* In the base layer on purpose: an unlayered rule here beat utility classes such as text-white on links. */
 @layer base {
   html.portal a:not(.btn) { color: var(--color-brand-700); }
   html.portal a:not(.btn):hover { color: var(--color-brand-800); }

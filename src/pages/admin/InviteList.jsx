@@ -1,11 +1,9 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
-import { LinkIcon, ArrowPathIcon, TrashIcon, EnvelopeOpenIcon } from '@heroicons/react/24/outline';
 import SegmentedControl from '../../components/portal/SegmentedControl';
 import ConfirmDialog from '../../components/portal/ConfirmDialog';
 import Badge from '../../components/ui/Badge';
-import EmptyState from '../../components/ui/EmptyState';
 import Skeleton from '../../components/ui/Skeleton';
 import { listInvites, resendInvite, revokeInvite } from '../../services/userService';
 import { timeAgo } from '../../lib/utils';
@@ -44,9 +42,7 @@ const InviteList = ({ className = '' }) => {
 
   return (
     <section className={`card p-6 ${className}`} aria-labelledby="invites-heading">
-      <h2 id="invites-heading" className="flex items-center gap-2 text-lg font-extrabold text-ink-900">
-        <EnvelopeOpenIcon className="h-5 w-5 text-brand-600" aria-hidden="true" /> Invitations
-      </h2>
+      <h2 id="invites-heading" className="text-lg font-extrabold text-ink-900">Invitations</h2>
       <div className="mt-4">
         <SegmentedControl size="sm" label="Invitation status" value={status} onChange={setStatus} options={[{ value: 'pending', label: 'Waiting' }, { value: 'expired', label: 'Expired' }, { value: 'accepted', label: 'Joined' }]} />
       </div>
@@ -55,7 +51,7 @@ const InviteList = ({ className = '' }) => {
         {isLoading ? (
           <Skeleton rows={4} />
         ) : invites.length === 0 ? (
-          <EmptyState icon={EnvelopeOpenIcon} title={status === 'pending' ? 'No invitations waiting' : 'Nothing here'} description={status === 'pending' ? 'When you invite someone, you can track it here.' : ''} />
+          <p className="py-6 text-sm text-ink-400">{status === 'pending' ? 'No invitations waiting.' : status === 'expired' ? 'No expired invitations.' : 'No one has joined from an invitation yet.'}</p>
         ) : (
           <ul className="divide-y divide-ink-100">
             {invites.map((i) => (
@@ -71,9 +67,9 @@ const InviteList = ({ className = '' }) => {
                 </div>
                 {status !== 'accepted' && (
                   <div className="mt-2.5 flex flex-wrap gap-2">
-                    <button type="button" onClick={() => resend.mutate(i.id)} disabled={resend.isPending} className="btn btn-outline btn-sm"><ArrowPathIcon className="mr-1.5 h-4 w-4" aria-hidden="true" /> Send again</button>
-                    {status === 'pending' && <button type="button" onClick={() => copyLink(i)} className="btn btn-ghost btn-sm"><LinkIcon className="mr-1.5 h-4 w-4" aria-hidden="true" /> Copy link</button>}
-                    <button type="button" onClick={() => setToRevoke(i)} className="btn btn-ghost btn-sm !text-red-600"><TrashIcon className="mr-1.5 h-4 w-4" aria-hidden="true" /> Cancel</button>
+                    <button type="button" onClick={() => resend.mutate(i.id)} disabled={resend.isPending} className="btn btn-outline btn-sm">Send again</button>
+                    {status === 'pending' && <button type="button" onClick={() => copyLink(i)} className="btn btn-ghost btn-sm">Copy link</button>}
+                    <button type="button" onClick={() => setToRevoke(i)} className="btn btn-ghost btn-sm !text-red-600">Cancel</button>
                   </div>
                 )}
               </li>
@@ -89,8 +85,8 @@ const InviteList = ({ className = '' }) => {
         loading={revoke.isPending}
         tone="danger"
         title="Cancel this invitation?"
-        message={`The link sent to ${toRevoke?.email} will stop working. You can always invite them again.`}
-        confirmLabel="Yes, cancel it"
+        message={`The link sent to ${toRevoke?.email} will stop working. You can invite them again later.`}
+        confirmLabel="Cancel invitation"
         cancelLabel="Keep it"
       />
     </section>

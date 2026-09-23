@@ -1,5 +1,4 @@
-import { FingerPrintIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
-import { motion } from 'framer-motion';
+import { ChevronRightIcon } from '@heroicons/react/24/outline';
 import clsx from 'clsx';
 import EmptyState from '../../ui/EmptyState';
 import Skeleton from '../../ui/Skeleton';
@@ -15,15 +14,15 @@ const AuditTrailTable = ({ entries = [], onSelect, isLoading }) => {
     return <div className="space-y-3 p-5">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-16 rounded-2xl" />)}</div>;
   }
   if (!entries.length) {
-    return <div className="p-5"><EmptyState icon={FingerPrintIcon} title="No records found" description="Nothing matches those filters. Try widening the dates or choosing “Everything”." /></div>;
+    return <div className="p-5"><EmptyState title="No records found" description="Nothing matches those filters. Try widening the dates." /></div>;
   }
 
   return (
     <ul className="divide-y divide-ink-100">
-      {entries.map((e, i) => (
-        <motion.li key={e.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25, delay: Math.min(i * 0.015, 0.25) }}>
-          <button type="button" onClick={() => onSelect?.(e)} className="flex w-full items-center gap-4 px-5 py-4 text-left transition-colors hover:bg-brand-50/50">
-            <span className={clsx('h-3 w-3 shrink-0 rounded-full', dot[trailTone(e.action)])} aria-hidden="true" />
+      {entries.map((e) => (
+        <li key={e.id}>
+          <button type="button" onClick={() => onSelect?.(e)} className="flex w-full items-center gap-4 px-5 py-4 text-left transition-colors hover:bg-ink-50">
+            <span className={clsx('h-2.5 w-2.5 shrink-0 rounded-full', dot[trailTone(e.action)])} aria-hidden="true" />
             <span className="min-w-0 flex-1">
               <span className="block font-bold text-ink-900">{describeTrailAction(e.action)}</span>
               <span className="mt-0.5 block truncate text-xs text-ink-400">
@@ -33,7 +32,7 @@ const AuditTrailTable = ({ entries = [], onSelect, isLoading }) => {
             <span className="hidden text-xs font-semibold text-ink-400 sm:block" title={formatDateTime(e.created_at)}>{timeAgo(e.created_at)}</span>
             <ChevronRightIcon className="h-5 w-5 shrink-0 text-ink-300" aria-hidden="true" />
           </button>
-        </motion.li>
+        </li>
       ))}
     </ul>
   );

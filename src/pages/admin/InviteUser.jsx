@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
 import { motion, AnimatePresence } from 'framer-motion';
-import { UserPlusIcon, EnvelopeIcon, CheckIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline';
+import { CheckIcon } from '@heroicons/react/24/outline';
 import clsx from 'clsx';
 import PageHeader from '../../components/portal/PageHeader';
 import InviteList from './InviteList';
@@ -47,21 +47,23 @@ const InviteUser = () => {
 
   return (
     <div>
-      <PageHeader icon={UserPlusIcon} title="Invite Someone" description="Give a colleague access. They’ll get an email with a link to choose their own password — you never see or set it." />
+      <PageHeader
+        backTo="/dashboard/admin/users"
+        backLabel="Portal users"
+        title="Invite Someone"
+        description="They’ll get an email with a link to set their own password."
+      />
 
       <div className="grid items-start gap-6 xl:grid-cols-5">
         <form onSubmit={submit} noValidate className="card p-6 sm:p-8 xl:col-span-3" aria-label="Invite someone">
           <div>
             <label htmlFor="invite-email" className="mb-1.5 block text-sm font-bold text-ink-700">Their email address</label>
-            <div className="relative">
-              <EnvelopeIcon className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-ink-300" aria-hidden="true" />
-              <input id="invite-email" type="email" inputMode="email" autoComplete="off" placeholder="name@example.com" value={email} onChange={(e) => setEmail(e.target.value)} className={clsx('input pl-11', tried && errors.email && 'border-red-400')} />
-            </div>
+            <input id="invite-email" type="email" inputMode="email" autoComplete="off" placeholder="name@example.com" value={email} onChange={(e) => setEmail(e.target.value)} className={clsx('input', tried && errors.email && 'border-red-400')} />
             {tried && errors.email && <p className="mt-1.5 text-sm font-semibold text-red-600" role="alert">{errors.email}</p>}
           </div>
 
           <fieldset className="mt-7">
-            <legend className="mb-2 text-sm font-bold text-ink-700">What will they do?</legend>
+            <legend className="mb-2 text-sm font-bold text-ink-700">Role</legend>
             <div className="grid gap-3 sm:grid-cols-2">
               {ROLE_OPTIONS.map((r) => {
                 const active = role === r.value;
@@ -96,8 +98,8 @@ const InviteUser = () => {
             )}
           </AnimatePresence>
 
-          <button type="submit" disabled={invite.isPending} className="btn btn-primary btn-lg mt-8 w-full sm:w-auto">
-            {invite.isPending ? <span className="inline-flex items-center gap-3"><Spinner size="sm" className="[&_svg]:text-white" /> Sending…</span> : <><PaperAirplaneIcon className="mr-2 h-5 w-5" aria-hidden="true" /> Send invitation</>}
+          <button type="submit" disabled={invite.isPending} className="btn btn-primary btn-md mt-8 w-full sm:w-auto">
+            {invite.isPending ? <span className="inline-flex items-center gap-3"><Spinner size="sm" className="[&_svg]:text-white" /> Sending…</span> : 'Send invitation'}
           </button>
         </form>
 

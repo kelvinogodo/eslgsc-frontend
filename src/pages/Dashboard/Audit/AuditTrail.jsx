@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { FingerPrintIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
+import { ArrowPathIcon } from '@heroicons/react/24/outline';
 import PageHeader from '../../../components/portal/PageHeader';
 import AuditTrailTable from '../../../components/dashboard/auditTrail/AuditTrailTable';
 import AuditTrailDetailModal from '../../../components/dashboard/auditTrail/AuditTrailDetailModal';
@@ -33,7 +33,7 @@ const AuditTrail = () => {
 
   return (
     <div>
-      <PageHeader icon={FingerPrintIcon} title="Enrollment Records Log" description="The history kept by the separate staff enrollment system — sign-ins, new enrolments, verifications and changes. This is a read-only view." />
+      <PageHeader title="Enrollment Records Log" description="Sign-ins, enrolments, verifications and changes recorded by the staff enrollment system. Read-only." />
 
       <div className="card mb-5 p-4 sm:p-5">
         <div className="grid gap-3 lg:grid-cols-[repeat(2,minmax(0,1fr))_repeat(2,minmax(0,0.7fr))_auto]">

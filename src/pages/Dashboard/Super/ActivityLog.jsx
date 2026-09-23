@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { ClockIcon } from '@heroicons/react/24/outline';
 import PageHeader from '../../../components/portal/PageHeader';
 import SearchBox from '../../../components/portal/SearchBox';
 import ActivityLogTable from '../../../components/dashboard/activity/ActivityLogTable';
@@ -54,7 +53,7 @@ const ActivityLog = () => {
 
   return (
     <div>
-      <PageHeader icon={ClockIcon} title="Activity History" description="A permanent record of who did what in this portal, and when. It can’t be edited or deleted." />
+      <PageHeader title="Activity History" description="Who did what in the portal, and when. Entries can’t be edited or deleted." />
 
       <div className="card mb-5 p-4 sm:p-5">
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,0.8fr)_repeat(2,minmax(0,0.7fr))_auto]">

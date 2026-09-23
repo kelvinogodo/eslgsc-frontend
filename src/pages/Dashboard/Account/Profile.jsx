@@ -1,25 +1,13 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { AnimatePresence, motion } from 'framer-motion';
-import {
-  UserCircleIcon,
-  PencilIcon,
-  CheckIcon,
-  XMarkIcon,
-  ShieldCheckIcon,
-  EnvelopeIcon,
-  KeyIcon,
-  ArrowRightIcon
-} from '@heroicons/react/24/outline';
+import { PencilIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import useAuth from '../../../context/useAuth';
 import PageHeader from '../../../components/portal/PageHeader';
 import Avatar from '../../../components/portal/Avatar';
 import PasswordField from '../../../components/portal/PasswordField';
 import { passwordChecks } from '../../../lib/password';
 import Spinner from '../../../components/ui/Spinner';
-import { Stagger, Item } from '../../../components/portal/motion';
-import { navForRole, ROLE_LABELS } from '../../../lib/navigation';
+import { ROLE_LABELS } from '../../../lib/navigation';
 import { changePassword, updateProfile } from '../../../services/authService';
 
 const IdentityCard = () => {
@@ -50,37 +38,31 @@ const IdentityCard = () => {
       <div className="flex flex-col items-center text-center sm:flex-row sm:items-center sm:text-left">
         <Avatar name={user?.name} size="xl" className="sm:mr-6" />
         <div className="mt-4 min-w-0 flex-1 sm:mt-0">
-          <AnimatePresence mode="wait" initial={false}>
-            {editing ? (
-              <motion.div key="edit" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
-                <input
-                  autoFocus
-                  aria-label="Your full name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === 'Enter') save(); if (e.key === 'Escape') { setEditing(false); setName(user?.name || ''); } }}
-                  className="input max-w-xs"
-                />
-                <button type="button" onClick={save} disabled={saving} className="btn btn-primary btn-md" aria-label="Save name">
-                  {saving ? <Spinner size="xs" className="[&_svg]:text-white" /> : <CheckIcon className="h-5 w-5" />}
-                </button>
-                <button type="button" onClick={() => { setEditing(false); setName(user?.name || ''); }} className="btn btn-ghost btn-md" aria-label="Cancel"><XMarkIcon className="h-5 w-5" /></button>
-              </motion.div>
-            ) : (
-              <motion.div key="view" initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="flex items-center justify-center gap-2 sm:justify-start">
-                <h2 className="truncate text-2xl font-extrabold text-ink-900">{user?.name}</h2>
-                <button type="button" onClick={() => setEditing(true)} className="rounded-lg p-1.5 text-ink-400 hover:bg-ink-50 hover:text-brand-700" aria-label="Edit your name">
-                  <PencilIcon className="h-4 w-4" />
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-          <p className="mt-1 flex items-center justify-center gap-1.5 text-sm text-ink-500 sm:justify-start">
-            <EnvelopeIcon className="h-4 w-4" aria-hidden="true" /> {user?.email}
-          </p>
-          <span className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-brand-50 px-3 py-1 text-sm font-bold text-brand-800 ring-1 ring-brand-100">
-            <ShieldCheckIcon className="h-4 w-4" aria-hidden="true" /> {ROLE_LABELS[user?.role]}
-          </span>
+          {editing ? (
+            <div className="flex items-center gap-2">
+              <input
+                autoFocus
+                aria-label="Your full name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') save(); if (e.key === 'Escape') { setEditing(false); setName(user?.name || ''); } }}
+                className="input max-w-xs"
+              />
+              <button type="button" onClick={save} disabled={saving} className="btn btn-primary btn-md" aria-label="Save name">
+                {saving ? <Spinner size="xs" className="[&_svg]:text-white" /> : <CheckIcon className="h-5 w-5" />}
+              </button>
+              <button type="button" onClick={() => { setEditing(false); setName(user?.name || ''); }} className="btn btn-ghost btn-md" aria-label="Cancel"><XMarkIcon className="h-5 w-5" /></button>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center gap-2 sm:justify-start">
+              <h2 className="truncate text-2xl font-extrabold text-ink-900">{user?.name}</h2>
+              <button type="button" onClick={() => setEditing(true)} className="rounded-lg p-1.5 text-ink-400 hover:bg-ink-50 hover:text-brand-700" aria-label="Edit your name">
+                <PencilIcon className="h-4 w-4" />
+              </button>
+            </div>
+          )}
+          <p className="mt-1 text-sm text-ink-500">{user?.email}</p>
+          <p className="mt-2 text-sm font-semibold text-brand-800">{ROLE_LABELS[user?.role]}</p>
         </div>
       </div>
     </div>
@@ -122,10 +104,7 @@ const PasswordCard = () => {
 
   return (
     <form onSubmit={submit} noValidate className="card p-6 sm:p-8" aria-labelledby="pw-heading">
-      <h2 id="pw-heading" className="flex items-center gap-2 text-lg font-extrabold text-ink-900">
-        <KeyIcon className="h-5 w-5 text-brand-600" aria-hidden="true" /> Change your password
-      </h2>
-      <p className="mt-1 text-sm text-ink-500">Choose something others can’t guess, and don’t share it with anyone.</p>
+      <h2 id="pw-heading" className="text-lg font-extrabold text-ink-900">Change password</h2>
 
       <div className="mt-6 space-y-5">
         <PasswordField label="Current password" name="current" autoComplete="current-password" value={current} onChange={(e) => setCurrent(e.target.value)} onBlur={() => setTouched((t) => ({ ...t, current: true }))} error={show('current')} />
@@ -142,46 +121,14 @@ const PasswordCard = () => {
   );
 };
 
-const Profile = () => {
-  const { user } = useAuth();
-  const groups = navForRole(user?.role).flatMap((g) => g.items).filter((i) => !['/dashboard', '/dashboard/profile', '/dashboard/help'].includes(i.href));
-
-  return (
-    <div>
-      <PageHeader icon={UserCircleIcon} title="My Profile" description="Your details, your password and what you can do in this portal." />
-
-      <div className="grid items-start gap-6 lg:grid-cols-5">
-        <div className="space-y-6 lg:col-span-3">
-          <IdentityCard />
-          <PasswordCard />
-        </div>
-
-        <aside className="card p-6 lg:col-span-2" aria-labelledby="access-heading">
-          <h2 id="access-heading" className="text-lg font-extrabold text-ink-900">What you can do here</h2>
-          <p className="mt-1 text-sm text-ink-500">As a {ROLE_LABELS[user?.role]}, you have access to:</p>
-          <Stagger as="ul" className="mt-4 space-y-1" stagger={0.05}>
-            {groups.map((i) => {
-              const Icon = i.icon;
-              return (
-                <Item as="li" key={i.href}>
-                  <Link to={i.href} className="group flex items-center gap-3 rounded-xl p-2.5 transition-colors hover:bg-brand-50">
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-ink-50 text-ink-500 transition-colors group-hover:bg-brand-600 group-hover:text-white">
-                      <Icon className="h-5 w-5" aria-hidden="true" />
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block text-sm font-bold text-ink-900">{i.name}</span>
-                      <span className="block truncate text-xs text-ink-400">{i.description}</span>
-                    </span>
-                    <ArrowRightIcon className="h-4 w-4 text-ink-300 transition-transform group-hover:translate-x-0.5 group-hover:text-brand-600" aria-hidden="true" />
-                  </Link>
-                </Item>
-              );
-            })}
-          </Stagger>
-        </aside>
-      </div>
+const Profile = () => (
+  <div className="max-w-3xl">
+    <PageHeader title="My Profile" description="Your name, email and password." />
+    <div className="space-y-6">
+      <IdentityCard />
+      <PasswordCard />
     </div>
-  );
-};
+  </div>
+);
 
 export default Profile;

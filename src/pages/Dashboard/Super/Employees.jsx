@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { motion } from 'framer-motion';
-import { IdentificationIcon, InformationCircleIcon, CheckBadgeIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
+import { ArrowPathIcon } from '@heroicons/react/24/outline';
 import PageHeader from '../../../components/portal/PageHeader';
 import SearchBox from '../../../components/portal/SearchBox';
 import Avatar from '../../../components/portal/Avatar';
@@ -59,16 +58,12 @@ const Employees = () => {
   return (
     <div>
       <PageHeader
-        icon={IdentificationIcon}
         title={scope?.lgaName ? `Staff in ${scope.lgaName}` : 'Staff Records'}
-        description="Find anyone enrolled in the staff enrollment system. You can look at records here, but not change them."
+        description="Everyone enrolled in the staff enrollment system. Records are view-only here."
       />
 
       {data?.warning && (
-        <div className="mb-5 flex items-start gap-3 rounded-2xl bg-gold-50 p-4 ring-1 ring-gold-200">
-          <InformationCircleIcon className="mt-0.5 h-5 w-5 shrink-0 text-gold-600" aria-hidden="true" />
-          <p className="text-sm font-semibold text-ink-700">{data.warning}</p>
-        </div>
+        <p className="mb-5 rounded-xl bg-gold-50 p-4 text-sm font-semibold text-ink-700 ring-1 ring-gold-200">{data.warning}</p>
       )}
 
       <div className="card mb-5 p-4 sm:p-5">
@@ -100,7 +95,6 @@ const Employees = () => {
         ) : employees.length === 0 ? (
           <div className="p-6">
             <EmptyState
-              icon={IdentificationIcon}
               title={filtered ? 'No staff match that' : 'No staff records to show'}
               description={filtered ? 'Check the spelling, or try fewer filters.' : 'Records appear here once staff have been enrolled.'}
               action={filtered && <button type="button" onClick={reset} className="btn btn-outline btn-md">Clear search and filters</button>}
@@ -121,12 +115,9 @@ const Employees = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-ink-100">
-                  {employees.map((emp, i) => (
-                    <motion.tr
+                  {employees.map((emp) => (
+                    <tr
                       key={emp.id}
-                      initial={{ opacity: 0, y: 6 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.25, delay: Math.min(i * 0.02, 0.3) }}
                       onClick={() => navigate(`/dashboard/employees/${encodeURIComponent(emp.employee_id)}`)}
                       className="cursor-pointer"
                     >
@@ -145,7 +136,7 @@ const Employees = () => {
                       <td className="table-cell max-w-[12rem]"><span className="line-clamp-2">{emp.rank || '—'}</span>{emp.grade_level && <span className="block text-xs text-ink-400">{emp.grade_level}</span>}</td>
                       <td className="table-cell max-w-[13rem]"><span className="line-clamp-2">{emp.present_station || '—'}</span></td>
                       <td className="table-cell"><StatusBadges emp={emp} /></td>
-                    </motion.tr>
+                    </tr>
                   ))}
                 </tbody>
               </table>
@@ -173,11 +164,7 @@ const Employees = () => {
 
       {totalPages > 1 && <Pagination className="mt-6" currentPage={page} totalPages={totalPages} onPageChange={setPage} />}
 
-      {scope?.note && (
-        <p className="mt-6 flex items-start gap-2 text-xs leading-relaxed text-ink-400">
-          <CheckBadgeIcon className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" /> {scope.note}
-        </p>
-      )}
+      {scope?.note && <p className="mt-6 text-xs leading-relaxed text-ink-400">{scope.note}</p>}
     </div>
   );
 };

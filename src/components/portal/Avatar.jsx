@@ -1,13 +1,7 @@
 import clsx from 'clsx';
 import { getInitials } from '../../lib/utils';
 
-const palette = [
-  'from-brand-500 to-brand-700',
-  'from-gold-400 to-gold-600',
-  'from-ink-400 to-ink-700',
-  'from-teal-400 to-teal-700',
-  'from-emerald-400 to-emerald-700'
-];
+const palette = ['bg-brand-600', 'bg-gold-500', 'bg-ink-500', 'bg-teal-600', 'bg-brand-800'];
 
 const hash = (s = '') => [...s].reduce((a, c) => a + c.charCodeAt(0), 0);
 
@@ -17,7 +11,7 @@ const Avatar = ({ name, size = 'md', className }) => {
     <span
       aria-hidden="true"
       className={clsx(
-        'inline-flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br font-bold text-white shadow-sm',
+        'inline-flex shrink-0 items-center justify-center rounded-full font-bold text-white',
         palette[hash(name) % palette.length],
         dims,
         className

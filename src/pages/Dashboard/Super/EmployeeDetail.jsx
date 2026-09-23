@@ -2,17 +2,14 @@ import { useState, Fragment } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Dialog, Transition } from '@headlessui/react';
-import {
-  UserCircleIcon, PhoneIcon, EnvelopeIcon, MapPinIcon, BriefcaseIcon, CalendarDaysIcon, AcademicCapIcon,
-  LockClosedIcon, MagnifyingGlassPlusIcon, XMarkIcon, ArrowTrendingUpIcon, ClockIcon, CheckBadgeIcon
-} from '@heroicons/react/24/outline';
+import { UserCircleIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import PageHeader from '../../../components/portal/PageHeader';
 import Badge from '../../../components/ui/Badge';
 import EmptyState from '../../../components/ui/EmptyState';
 import Skeleton from '../../../components/ui/Skeleton';
-import { Stagger, Item } from '../../../components/portal/motion';
 import { getEmployeeByEmployeeId } from '../../../services/employeeService';
 import { fmtDate, ageFrom, serviceYears, humanSpan, retirementState, staffStatus, BASIS_TEXT } from '../../../lib/retirement';
+import { titleCase } from '../../../lib/utils';
 
 const Field = ({ label, value, wide }) => (
   <div className={wide ? 'sm:col-span-2' : ''}>
@@ -21,14 +18,11 @@ const Field = ({ label, value, wide }) => (
   </div>
 );
 
-const Section = ({ icon: Icon, title, children, className = '' }) => (
-  <Item as="section" className={`card p-6 ${className}`}>
-    <h2 className="mb-5 flex items-center gap-2 text-base font-extrabold text-ink-900">
-      <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-50 text-brand-700"><Icon className="h-5 w-5" aria-hidden="true" /></span>
-      {title}
-    </h2>
+const Section = ({ title, children }) => (
+  <section className="card p-6">
+    <h2 className="mb-5 text-base font-extrabold text-ink-900">{title}</h2>
     <dl className="grid gap-x-8 gap-y-5 sm:grid-cols-2">{children}</dl>
-  </Item>
+  </section>
 );
 
 // `qualifications` is stored as a JSON list of { name, date } — show it as a list, not raw JSON.
@@ -48,8 +42,6 @@ const Qualifications = ({ raw }) => {
     </ul>
   );
 };
-
-const titleCase = (s) => (s || '').trim().toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
 
 // Career history, oldest first, as a vertical timeline.
 const CareerTimeline = ({ steps }) => {
@@ -76,18 +68,16 @@ const CareerTimeline = ({ steps }) => {
   );
 };
 
-const TONE_BAR = { green: 'from-brand-600 to-brand-800', yellow: 'from-gold-400 to-gold-500', red: 'from-red-500 to-red-700' };
+const TONE_BAR = { green: 'bg-brand-700', yellow: 'bg-gold-500', red: 'bg-red-600' };
 
 const RetirementCard = ({ emp }) => {
   const state = retirementState(emp.retirement_date_calc, emp.retirement_leave_date);
   const service = serviceYears(emp.date_of_first_appointment);
   const age = ageFrom(emp.date_of_birth);
   return (
-    <Item as="section" className="card overflow-hidden">
-      <div className={`bg-gradient-to-r px-6 py-4 text-white ${TONE_BAR[state?.tone || 'green']}`}>
-        <h2 className="flex items-center gap-2 text-base font-extrabold">
-          <ClockIcon className="h-5 w-5" aria-hidden="true" /> Retirement
-        </h2>
+    <section className="card overflow-hidden">
+      <div className={`px-6 py-4 text-white ${TONE_BAR[state?.tone || 'green']}`}>
+        <h2 className="text-base font-extrabold">Retirement</h2>
         {state ? (
           <p className="mt-1 text-sm font-semibold text-white/90"><span className="font-extrabold">{state.label}.</span> {state.detail}</p>
         ) : (
@@ -104,7 +94,7 @@ const RetirementCard = ({ emp }) => {
       <p className="border-t border-ink-100 px-6 py-3 text-xs text-ink-400">
         Retirement is the earlier of 60 years of age or 35 years of service. Retirement leave starts 3 months before the retirement date.
       </p>
-    </Item>
+    </section>
   );
 };
 
@@ -152,50 +142,42 @@ const EmployeeDetail = () => {
 
   return (
     <div>
-      <PageHeader backTo="/dashboard/employees" backLabel="All staff" icon={UserCircleIcon} title="Staff Record" description="This record can’t be changed here — it’s maintained in the staff enrollment system." />
+      <PageHeader backTo="/dashboard/employees" backLabel="All staff" title="Staff Record" description="Maintained in the staff enrollment system. View-only here." />
 
       {isLoading ? (
         <div className="space-y-5"><Skeleton className="h-44 rounded-2xl" /><Skeleton className="h-64 rounded-2xl" /></div>
       ) : notFound || (!emp && !isError) ? (
-        <div className="card p-6"><EmptyState title="We couldn’t find that person" description="That file number doesn’t exist, or you don’t have access to it." action={<Link to="/dashboard/employees" className="btn btn-primary btn-md">Back to all staff</Link>} /></div>
+        <div className="card p-6"><EmptyState title="Staff member not found" description="That file number doesn’t exist, or you don’t have access to it." action={<Link to="/dashboard/employees" className="btn btn-primary btn-md">Back to all staff</Link>} /></div>
       ) : isError ? (
-        <div className="card p-6"><EmptyState title="We couldn’t load this record" description="Please check your connection and try again." /></div>
+        <div className="card p-6"><EmptyState title="Couldn’t load this record" description="Check your connection and try again." /></div>
       ) : (
-        <Stagger className="space-y-5" stagger={0.08}>
-          <Item className="card relative overflow-hidden p-6 sm:p-8">
-            <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-r from-brand-700 to-brand-900" aria-hidden="true" />
-            <div className="bg-dots absolute inset-x-0 top-0 h-24 opacity-50" aria-hidden="true" />
-            <div className="relative flex flex-col items-center gap-5 pt-8 text-center sm:flex-row sm:items-end sm:pt-10 sm:text-left">
-              {hasPhoto ? (
-                <button
-                  type="button"
-                  onClick={() => setPhotoOpen(true)}
-                  aria-label={`View a larger photo of ${emp.full_name}`}
-                  className="group relative h-32 w-32 shrink-0 cursor-zoom-in overflow-hidden rounded-3xl shadow-xl ring-4 ring-white focus:outline-none focus-visible:ring-brand-500"
-                >
-                  <img src={emp.photo_url} alt={`Photo of ${emp.full_name}`} onError={() => setPhotoBroken(true)} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
-                  <span className="absolute inset-0 flex items-end justify-center bg-gradient-to-t from-ink-900/60 via-transparent to-transparent pb-2 opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
-                    <span className="flex items-center gap-1 rounded-full bg-white/90 px-2.5 py-1 text-[0.7rem] font-bold text-ink-800"><MagnifyingGlassPlusIcon className="h-3.5 w-3.5" aria-hidden="true" /> Enlarge</span>
-                  </span>
-                </button>
-              ) : (
-                <span className="flex h-32 w-32 shrink-0 items-center justify-center rounded-3xl bg-ink-50 text-ink-300 shadow-xl ring-4 ring-white"><UserCircleIcon className="h-20 w-20" aria-hidden="true" /></span>
-              )}
-              <div className="min-w-0 flex-1 pb-1">
-                <h2 className="text-2xl font-extrabold tracking-tight text-ink-900 sm:text-[1.7rem]">{emp.full_name?.trim()}</h2>
-                <p className="mt-0.5 font-mono text-sm text-ink-500">{emp.employee_id}</p>
-                <div className="mt-3 flex flex-wrap justify-center gap-2 sm:justify-start">
-                  {emp.is_verified ? <Badge variant="green">Verified</Badge> : <Badge variant="yellow">Not yet verified</Badge>}
-                  <Badge variant={staffStatus(emp).variant}>{staffStatus(emp).label}</Badge>
-                  {emp.grade_level && <Badge variant="gray">Grade level {emp.grade_level}</Badge>}
-                </div>
+        <div className="space-y-5">
+          <div className="card flex flex-col items-center gap-5 p-6 text-center sm:flex-row sm:p-8 sm:text-left">
+            {hasPhoto ? (
+              <button
+                type="button"
+                onClick={() => setPhotoOpen(true)}
+                aria-label={`View a larger photo of ${emp.full_name}`}
+                title="View larger photo"
+                className="h-28 w-28 shrink-0 cursor-zoom-in overflow-hidden rounded-2xl ring-1 ring-ink-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+              >
+                <img src={emp.photo_url} alt={`Photo of ${emp.full_name}`} onError={() => setPhotoBroken(true)} className="h-full w-full object-cover" />
+              </button>
+            ) : (
+              <span className="flex h-28 w-28 shrink-0 items-center justify-center rounded-2xl bg-ink-50 text-ink-300"><UserCircleIcon className="h-16 w-16" aria-hidden="true" /></span>
+            )}
+            <div className="min-w-0 flex-1">
+              <h2 className="text-2xl font-extrabold tracking-tight text-ink-900 sm:text-[1.7rem]">{emp.full_name?.trim()}</h2>
+              <p className="mt-0.5 font-mono text-sm text-ink-500">{emp.employee_id}</p>
+              <div className="mt-3 flex flex-wrap justify-center gap-2 sm:justify-start">
+                {emp.is_verified ? <Badge variant="green">Verified</Badge> : <Badge variant="yellow">Not yet verified</Badge>}
+                <Badge variant={staffStatus(emp).variant}>{staffStatus(emp).label}</Badge>
               </div>
-              <p className="flex items-center gap-1.5 text-xs font-semibold text-ink-400"><LockClosedIcon className="h-4 w-4" aria-hidden="true" /> View only</p>
             </div>
-          </Item>
+          </div>
 
           <div className="grid gap-5 lg:grid-cols-2">
-            <Section icon={BriefcaseIcon} title="Work">
+            <Section title="Work">
               <Field label="Rank" value={titleCase(emp.rank)} />
               <Field label="Grade level" value={emp.grade_level} />
               <Field label="Cadre" value={emp.cadre} wide />
@@ -204,7 +186,7 @@ const EmployeeDetail = () => {
               <Field label="Posted to" value={emp.present_station} wide />
             </Section>
 
-            <Section icon={UserCircleIcon} title="Personal">
+            <Section title="Personal">
               <Field label="Sex" value={emp.sex} />
               <Field label="Date of birth" value={fmtDate(emp.date_of_birth)} />
               <Field label="Age" value={age != null ? `${age} years` : null} />
@@ -212,7 +194,7 @@ const EmployeeDetail = () => {
               <Field label="Local government of origin" value={emp.lga_of_origin} wide />
             </Section>
 
-            <Section icon={CalendarDaysIcon} title="Service dates">
+            <Section title="Service dates">
               <Field label="First appointment" value={fmtDate(emp.date_of_first_appointment)} />
               <Field label="Time in service" value={service ? humanSpan(service) : null} />
               <Field label="Confirmation" value={fmtDate(emp.date_of_confirmation)} />
@@ -220,36 +202,32 @@ const EmployeeDetail = () => {
               <Field label="Conversion/transfer of service" value={fmtDate(emp.date_of_conversion || emp.date_of_transfer)} />
             </Section>
 
-            <Section icon={MapPinIcon} title="Contact">
-              <Field label="Phone" value={emp.phone_number && <span className="inline-flex items-center gap-1.5"><PhoneIcon className="h-4 w-4 text-ink-400" aria-hidden="true" />{emp.phone_number}</span>} />
-              <Field label="Email" value={emp.email && <span className="inline-flex items-center gap-1.5 break-all"><EnvelopeIcon className="h-4 w-4 text-ink-400" aria-hidden="true" />{emp.email}</span>} />
+            <Section title="Contact">
+              <Field label="Phone" value={emp.phone_number} />
+              <Field label="Email" value={emp.email && <span className="break-all">{emp.email}</span>} />
             </Section>
           </div>
 
-          <Item as="section" className="card p-6">
-            <h2 className="mb-5 flex items-center gap-2 text-base font-extrabold text-ink-900">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-50 text-brand-700"><ArrowTrendingUpIcon className="h-5 w-5" aria-hidden="true" /></span>
-              Career progression
-            </h2>
+          <section className="card p-6">
+            <h2 className="mb-5 text-base font-extrabold text-ink-900">Career progression</h2>
             <CareerTimeline steps={emp.career_progression} />
-          </Item>
+          </section>
 
-          <Section icon={AcademicCapIcon} title="Qualifications &amp; remarks">
+          <Section title="Qualifications and remarks">
             <div className="sm:col-span-2"><dt className="text-xs font-bold uppercase tracking-wide text-ink-400">Qualifications</dt><dd className="mt-2 font-semibold text-ink-900"><Qualifications raw={emp.qualifications} /></dd></div>
             {emp.remark && <Field label="Remark" value={emp.remark} wide />}
           </Section>
 
           <RetirementCard emp={emp} />
 
-          <Section icon={CheckBadgeIcon} title="Enrollment record">
-            <Field label="Verification" value={emp.is_verified ? 'Verified' : 'Not yet verified'} />
-            <Field label="Verified on" value={fmtDate(emp.verified_at)} />
+          <Section title="Enrollment record">
             <Field label="Enrolled on" value={fmtDate(emp.created_at)} />
+            <Field label="Verified on" value={fmtDate(emp.verified_at)} />
             <Field label="Last updated" value={fmtDate(emp.updated_at)} />
           </Section>
 
           {hasPhoto && <PhotoLightbox src={emp.photo_url} name={emp.full_name?.trim()} open={photoOpen} onClose={() => setPhotoOpen(false)} />}
-        </Stagger>
+        </div>
       )}
     </div>
   );

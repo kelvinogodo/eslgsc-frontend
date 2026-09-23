@@ -1,20 +1,19 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { ArchiveBoxIcon, ChevronRightIcon, UserCircleIcon } from '@heroicons/react/24/outline';
+import { ChevronRightIcon, UserCircleIcon } from '@heroicons/react/24/outline';
 import PageHeader from '../../../components/portal/PageHeader';
 import SearchBox from '../../../components/portal/SearchBox';
 import Badge from '../../../components/ui/Badge';
 import EmptyState from '../../../components/ui/EmptyState';
 import Skeleton from '../../../components/ui/Skeleton';
 import Pagination from '../../../components/ui/Pagination';
-import { Stagger, Item } from '../../../components/portal/motion';
 import { getRetiredStaff } from '../../../services/employeeService';
 import useDebouncedValue from '../../../hooks/useDebouncedValue';
 import { fmtDate, humanSpan, span, todayDate } from '../../../lib/retirement';
+import { titleCase } from '../../../lib/utils';
 
 const LIMIT = 20;
-const titleCase = (s) => (s || '').trim().toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
 
 const RetiredStaff = () => {
   const [search, setSearch] = useState('');
@@ -33,9 +32,8 @@ const RetiredStaff = () => {
   return (
     <div>
       <PageHeader
-        icon={ArchiveBoxIcon}
         title="Retired Staff"
-        description="Staff whose retirement date has passed — the earlier of 60 years of age or 35 years of service — most recent first."
+        description="Staff whose retirement date (60 years of age or 35 years of service, whichever is first) has passed. Most recent first."
       />
 
       <div className="mb-5">
@@ -56,10 +54,10 @@ const RetiredStaff = () => {
       ) : (
         <>
           <p className="mb-3 text-sm font-semibold text-ink-500">{total} retired {total === 1 ? 'person' : 'people'}{q ? ' match your search' : ''}</p>
-          <Stagger key={`${q}-${page}`} className="space-y-3" stagger={0.03}>
+          <ul className="space-y-3">
             {rows.map((r) => (
-              <Item key={r.employee_id}>
-                <Link to={`/dashboard/employees/${encodeURIComponent(r.employee_id)}`} className="card group flex items-center gap-4 p-4 transition-shadow hover:shadow-lg sm:p-5">
+              <li key={r.employee_id}>
+                <Link to={`/dashboard/employees/${encodeURIComponent(r.employee_id)}`} className="card flex items-center gap-4 p-4 transition-colors hover:border-brand-300 sm:p-5">
                   {r.photo_url ? (
                     <img src={r.photo_url} alt="" className="h-14 w-14 shrink-0 rounded-2xl object-cover" loading="lazy" decoding="async" />
                   ) : (
@@ -78,11 +76,11 @@ const RetiredStaff = () => {
                   <div className="hidden text-right md:block">
                     <Badge variant="gray">{r.retirement_basis === 'service' ? '35 years’ service' : 'Age 60'}</Badge>
                   </div>
-                  <ChevronRightIcon className="h-5 w-5 shrink-0 text-ink-300 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+                  <ChevronRightIcon className="h-5 w-5 shrink-0 text-ink-300" aria-hidden="true" />
                 </Link>
-              </Item>
+              </li>
             ))}
-          </Stagger>
+          </ul>
           {totalPages > 1 && <Pagination className="mt-6" currentPage={page} totalPages={totalPages} onPageChange={setPage} />}
           <p className="mt-6 text-xs text-ink-400">
             The staff enrollment system may still list these people as active; that record can’t be changed from this portal.

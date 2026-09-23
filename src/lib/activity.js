@@ -39,14 +39,6 @@ export const describeActivity = (a) => {
   };
 };
 
-export const activityTone = (a) => {
-  const key = norm(a.action);
-  if (['approve', 'publish', 'create', 'set_password'].includes(key)) return 'bg-brand-500';
-  if (['reject', 'delete'].includes(key)) return 'bg-red-400';
-  if (['submit'].includes(key)) return 'bg-gold-400';
-  return 'bg-ink-300';
-};
-
 // ---- Staff enrollment system (audit_logs) wording ----
 const TRAIL = {
   LOGIN: 'Signed in',

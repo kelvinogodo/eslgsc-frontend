@@ -1,17 +1,15 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { ClockIcon, ChevronRightIcon, UserCircleIcon } from '@heroicons/react/24/outline';
+import { ChevronRightIcon, UserCircleIcon } from '@heroicons/react/24/outline';
 import PageHeader from '../../../components/portal/PageHeader';
 import SegmentedControl from '../../../components/portal/SegmentedControl';
 import Badge from '../../../components/ui/Badge';
 import EmptyState from '../../../components/ui/EmptyState';
 import Skeleton from '../../../components/ui/Skeleton';
-import { Stagger, Item } from '../../../components/portal/motion';
 import { getUpcomingRetirements } from '../../../services/employeeService';
 import { fmtDate, daysUntil, humanSpan, span, todayDate } from '../../../lib/retirement';
-
-const titleCase = (s) => (s || '').trim().toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+import { titleCase } from '../../../lib/utils';
 
 const PAGE = 20;
 
@@ -31,9 +29,8 @@ const Retirements = () => {
   return (
     <div>
       <PageHeader
-        icon={ClockIcon}
         title="Upcoming Retirements"
-        description="Staff who will reach 60 years of age or 35 years of service within the next few months. Their retirement leave starts 3 months before their retirement date."
+        description="Staff reaching 60 years of age or 35 years of service soon. Retirement leave starts 3 months before the retirement date."
         actions={
           <SegmentedControl
             label="Look ahead"
@@ -59,13 +56,13 @@ const Retirements = () => {
       ) : (
         <>
           <p className="mb-3 text-sm font-semibold text-ink-500">{allRows.length} {allRows.length === 1 ? 'person' : 'people'} retiring in the next {months} months</p>
-          <Stagger className="space-y-3" stagger={0.03}>
+          <ul className="space-y-3">
             {rows.map((r) => {
               const left = daysUntil(r.retirement_leave_date);
               const onLeave = left <= 0;
               return (
-                <Item key={r.employee_id}>
-                  <Link to={`/dashboard/employees/${encodeURIComponent(r.employee_id)}`} className="card group flex items-center gap-4 p-4 transition-shadow hover:shadow-lg sm:p-5">
+                <li key={r.employee_id}>
+                  <Link to={`/dashboard/employees/${encodeURIComponent(r.employee_id)}`} className="card flex items-center gap-4 p-4 transition-colors hover:border-brand-300 sm:p-5">
                     {r.photo_url ? (
                       <img src={r.photo_url} alt="" className="h-14 w-14 shrink-0 rounded-2xl object-cover" loading="lazy" decoding="async" />
                     ) : (
@@ -85,12 +82,12 @@ const Retirements = () => {
                       <p className="text-xs font-bold uppercase tracking-wide text-ink-400">Leave</p>
                       <Badge variant={onLeave ? 'yellow' : 'gray'}>{onLeave ? 'On leave' : fmtDate(r.retirement_leave_date)}</Badge>
                     </div>
-                    <ChevronRightIcon className="h-5 w-5 shrink-0 text-ink-300 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+                    <ChevronRightIcon className="h-5 w-5 shrink-0 text-ink-300" aria-hidden="true" />
                   </Link>
-                </Item>
+                </li>
               );
             })}
-          </Stagger>
+          </ul>
           {allRows.length > shown && (
             <div className="mt-5 text-center">
               <button type="button" onClick={() => setShown((n) => n + PAGE)} className="btn btn-outline btn-md">

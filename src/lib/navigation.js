@@ -6,8 +6,8 @@ import {
   MegaphoneIcon,
   IdentificationIcon,
   UsersIcon,
-  UserPlusIcon,
   ArchiveBoxIcon,
+  CalendarDaysIcon,
   ClipboardDocumentCheckIcon,
   ChatBubbleLeftRightIcon,
   ClockIcon,
@@ -29,50 +29,48 @@ const EDITORS = ['SUPER_ADMIN', 'ADMIN', 'MEDIA_ADMIN'];
 const REVIEWERS = ['SUPER_ADMIN', 'ADMIN', 'AUDIT'];
 
 /**
- * Single source of truth for the sidebar, breadcrumbs and page titles.
- * Labels are deliberately plain language ("Approvals", not "Audit Queue").
- * `badge` names a counter supplied by the layout (see Sidebar).
+ * Sidebar entries, also used for page titles.
+ * `badge` names a counter supplied by the Sidebar.
  */
 export const NAV_GROUPS = [
   {
     label: null,
     items: [
-      { name: 'Home', href: '/dashboard', icon: HomeIcon, roles: ALL, end: true, description: 'Your overview' }
+      { name: 'Home', href: '/dashboard', icon: HomeIcon, roles: ALL, end: true }
     ]
   },
   {
     label: 'Content',
     items: [
-      { name: 'Write an Article', href: '/dashboard/news-editor', icon: PencilSquareIcon, roles: EDITORS, description: 'Create a news story' },
-      { name: 'My Articles', href: '/dashboard/drafts', icon: DocumentTextIcon, roles: EDITORS, description: 'Drafts and submissions' },
-      { name: 'News Desk', href: '/dashboard/news', icon: NewspaperIcon, roles: ['SUPER_ADMIN', 'ADMIN'], description: 'Review and manage published news' },
-      { name: 'Announcements', href: '/dashboard/announcements', icon: MegaphoneIcon, roles: EDITORS, description: 'Short public notices' }
+      { name: 'Write an Article', href: '/dashboard/news-editor', icon: PencilSquareIcon, roles: EDITORS },
+      { name: 'My Articles', href: '/dashboard/drafts', icon: DocumentTextIcon, roles: EDITORS },
+      { name: 'News Desk', href: '/dashboard/news', icon: NewspaperIcon, roles: ['SUPER_ADMIN', 'ADMIN'] },
+      { name: 'Announcements', href: '/dashboard/announcements', icon: MegaphoneIcon, roles: EDITORS }
     ]
   },
   {
     label: 'People',
     items: [
-      { name: 'Staff Records', href: '/dashboard/employees', icon: IdentificationIcon, roles: ['SUPER_ADMIN', 'ADMIN', 'LGA'], description: 'Browse enrolled staff' },
-      { name: 'Upcoming Retirements', href: '/dashboard/retirements', icon: ClockIcon, roles: ['SUPER_ADMIN', 'ADMIN'], badge: 'retiring', description: 'Staff retiring in the next 4 months' },
-      { name: 'Retired Staff', href: '/dashboard/retired', icon: ArchiveBoxIcon, roles: ['SUPER_ADMIN', 'ADMIN'], description: 'Staff who have already retired' },
-      { name: 'Portal Users', href: '/dashboard/admin/users', icon: UsersIcon, roles: ['SUPER_ADMIN'], description: 'Manage who can sign in' },
-      { name: 'Invite Someone', href: '/dashboard/admin/invite', icon: UserPlusIcon, roles: ['SUPER_ADMIN'], description: 'Send a sign-up invitation' }
+      { name: 'Staff Records', href: '/dashboard/employees', icon: IdentificationIcon, roles: ['SUPER_ADMIN', 'ADMIN', 'LGA'] },
+      { name: 'Upcoming Retirements', href: '/dashboard/retirements', icon: CalendarDaysIcon, roles: ['SUPER_ADMIN', 'ADMIN'], badge: 'retiring' },
+      { name: 'Retired Staff', href: '/dashboard/retired', icon: ArchiveBoxIcon, roles: ['SUPER_ADMIN', 'ADMIN'] },
+      { name: 'Portal Users', href: '/dashboard/admin/users', icon: UsersIcon, roles: ['SUPER_ADMIN'] }
     ]
   },
   {
     label: 'Oversight',
     items: [
-      { name: 'Approvals', href: '/dashboard/audit-queue', icon: ClipboardDocumentCheckIcon, roles: REVIEWERS, badge: 'pendingAudits', description: 'Items waiting for review' },
-      { name: 'Complaints', href: '/dashboard/complaints', icon: ChatBubbleLeftRightIcon, roles: REVIEWERS, description: 'Messages from the public' },
-      { name: 'Activity History', href: '/dashboard/activity-log', icon: ClockIcon, roles: REVIEWERS, description: 'Who did what, and when' },
-      { name: 'Enrollment Records Log', href: '/dashboard/audit-trail', icon: FingerPrintIcon, roles: REVIEWERS, description: 'Staff enrollment system history' }
+      { name: 'Approvals', href: '/dashboard/audit-queue', icon: ClipboardDocumentCheckIcon, roles: REVIEWERS, badge: 'pendingAudits' },
+      { name: 'Complaints', href: '/dashboard/complaints', icon: ChatBubbleLeftRightIcon, roles: REVIEWERS },
+      { name: 'Activity History', href: '/dashboard/activity-log', icon: ClockIcon, roles: REVIEWERS },
+      { name: 'Enrollment Records Log', href: '/dashboard/audit-trail', icon: FingerPrintIcon, roles: REVIEWERS }
     ]
   },
   {
     label: 'Account',
     items: [
-      { name: 'My Profile', href: '/dashboard/profile', icon: UserCircleIcon, roles: ALL, description: 'Your details and password' },
-      { name: 'Help & Guides', href: '/dashboard/help', icon: QuestionMarkCircleIcon, roles: ALL, description: 'Step-by-step help' }
+      { name: 'My Profile', href: '/dashboard/profile', icon: UserCircleIcon, roles: ALL },
+      { name: 'Help', href: '/dashboard/help', icon: QuestionMarkCircleIcon, roles: ALL }
     ]
   }
 ];
@@ -82,32 +80,19 @@ export const navForRole = (role) =>
     .map((g) => ({ ...g, items: g.items.filter((i) => i.roles.includes(role)) }))
     .filter((g) => g.items.length > 0);
 
-const FLAT = NAV_GROUPS.flatMap((g) => g.items.map((i) => ({ ...i, group: g.label })));
+const FLAT = NAV_GROUPS.flatMap((g) => g.items);
 
-/** Extra pages that are not in the sidebar but still deserve a proper title. */
+/** Pages that are not in the sidebar but still need a <title>. */
 const EXTRA_TITLES = [
-  { match: /^\/dashboard\/employees\/.+/, title: 'Staff Record', parent: '/dashboard/employees' },
-  { match: /^\/dashboard\/news-editor\/.+/, title: 'Edit Article', parent: '/dashboard/drafts' }
+  { match: /^\/dashboard\/employees\/.+/, title: 'Staff Record' },
+  { match: /^\/dashboard\/news-editor\/.+/, title: 'Edit Article' },
+  { match: /^\/dashboard\/admin\/invite$/, title: 'Invite Someone' }
 ];
 
-/** Title + parent trail for a pathname, used by the topbar breadcrumb and <title>. */
-export const getPageMeta = (pathname) => {
+/** Page title for a pathname, used for <title>. */
+export const getPageTitle = (pathname) => {
   const clean = pathname.replace(/\/+$/, '') || '/';
   const extra = EXTRA_TITLES.find((e) => e.match.test(clean));
-  if (extra) {
-    const parent = FLAT.find((i) => i.href === extra.parent);
-    return { title: extra.title, trail: parent ? [{ name: parent.name, href: parent.href }] : [] };
-  }
-  const item = FLAT.find((i) => i.href === clean);
-  if (!item) return { title: 'Portal', trail: [] };
-  return { title: item.name, trail: item.href === '/dashboard' ? [] : [] };
-};
-
-/** Where each role lands right after signing in. */
-export const HOME_FOR_ROLE = {
-  SUPER_ADMIN: '/dashboard',
-  ADMIN: '/dashboard',
-  MEDIA_ADMIN: '/dashboard',
-  AUDIT: '/dashboard',
-  LGA: '/dashboard'
+  if (extra) return extra.title;
+  return FLAT.find((i) => i.href === clean)?.name || 'Portal';
 };

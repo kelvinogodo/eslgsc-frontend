@@ -8,7 +8,7 @@ import ErrorBoundary from '../portal/ErrorBoundary';
 import { EASE } from '../portal/motionVariants';
 import usePortalTheme from '../../hooks/usePortalTheme';
 import usePageTitle from '../../hooks/usePageTitle';
-import { getPageMeta } from '../../lib/navigation';
+import { getPageTitle } from '../../lib/navigation';
 
 // The article editor updates its own URL after the first autosave
 // (/news-editor -> /news-editor/:id); that must not replay the page transition.
@@ -22,7 +22,7 @@ const DashboardLayout = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const key = transitionKey(location.pathname);
 
-  usePageTitle(getPageMeta(location.pathname).title);
+  usePageTitle(getPageTitle(location.pathname));
 
   useEffect(() => {
     setMenuOpen(false);
@@ -41,10 +41,10 @@ const DashboardLayout = () => {
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
                 key={key}
-                initial={reduce ? false : { opacity: 0, y: 14 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={reduce ? { opacity: 0 } : { opacity: 0, y: -8 }}
-                transition={{ duration: 0.22, ease: EASE }}
+                initial={reduce ? false : { opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15, ease: EASE }}
               >
                 <Suspense fallback={<PageSkeleton />}>{outlet}</Suspense>
               </motion.div>

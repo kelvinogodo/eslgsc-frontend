@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
-import { ClipboardDocumentCheckIcon } from '@heroicons/react/24/outline';
 import PageHeader from '../../../components/portal/PageHeader';
 import AuditQueueTable from '../../../components/dashboard/audit/AuditQueueTable';
 import AuditDetailModal from '../../../components/dashboard/audit/AuditDetailModal';
@@ -45,12 +44,11 @@ const AuditQueue = () => {
   return (
     <div>
       <PageHeader
-        icon={ClipboardDocumentCheckIcon}
         title="Approvals"
         description={canDecide
-          ? 'Things people have sent for review. Read each one, then approve it or send it back with feedback.'
-          : 'Things waiting for an Administrator’s decision. You can look at them, but not approve or reject.'}
-        actions={!isLoading && <Badge variant={items.length ? 'yellow' : 'green'}>{items.length ? `${items.length} waiting` : 'All clear'}</Badge>}
+          ? 'Submissions waiting for a decision. Approve them, or send them back with a note for the writer.'
+          : 'Submissions waiting for an Administrator’s decision. You can view them but not approve or reject.'}
+        actions={!isLoading && items.length > 0 && <Badge variant="yellow">{items.length} waiting</Badge>}
       />
 
       <div className="card">

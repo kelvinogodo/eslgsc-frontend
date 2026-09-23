@@ -96,6 +96,9 @@ export const formatDateTime = (date) => {
   return new Date(date).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true });
 };
 
+/** "SENIOR CLERICAL OFFICER" -> "Senior Clerical Officer" */
+export const titleCase = (s) => (s || '').trim().toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+
 /** Time-of-day greeting for the dashboard hero. */
 export const greeting = (now = new Date()) => {
   const h = now.getHours();

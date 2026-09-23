@@ -8,7 +8,7 @@ const PageSkeleton = () => (
       <Skeleton className="h-4 w-96 max-w-full rounded-lg" />
     </div>
     <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
-      {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-40 rounded-2xl" />)}
+      {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-28 rounded-2xl" />)}
     </div>
     <Skeleton className="h-72 rounded-2xl" />
   </div>
