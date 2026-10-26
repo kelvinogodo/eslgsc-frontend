@@ -2,8 +2,9 @@ import { useState, Fragment } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Dialog, Transition } from '@headlessui/react';
-import { UserCircleIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { PrinterIcon, UserCircleIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import PageHeader from '../../../components/portal/PageHeader';
+import EmployeePrintSheet from '../../../components/portal/EmployeePrintSheet';
 import Badge from '../../../components/ui/Badge';
 import EmptyState from '../../../components/ui/EmptyState';
 import Skeleton from '../../../components/ui/Skeleton';
@@ -142,7 +143,24 @@ const EmployeeDetail = () => {
 
   return (
     <div>
-      <PageHeader backTo="/dashboard/employees" backLabel="All staff" title="Staff Record" description="Maintained in the staff enrollment system. View-only here." />
+      <PageHeader
+        backTo="/dashboard/employees"
+        backLabel="All staff"
+        title="Staff Record"
+        description="Maintained in the staff enrollment system. View-only here."
+        actions={emp && (
+          <button
+            type="button"
+            onClick={() => window.print()}
+            title="In the print dialog, untick “Headers and footers” to leave out the web address and time."
+            className="btn btn-primary btn-md gap-2"
+          >
+            <PrinterIcon className="h-4 w-4" aria-hidden="true" />
+            Print record
+          </button>
+        )}
+      />
+      {emp && <EmployeePrintSheet emp={emp} />}
 
       {isLoading ? (
         <div className="space-y-5"><Skeleton className="h-44 rounded-2xl" /><Skeleton className="h-64 rounded-2xl" /></div>
