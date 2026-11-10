@@ -54,3 +54,9 @@ export const getRetirementSummary = async () => {
   const res = await api.get('/employees/retirements/summary');
   return res.data ?? { upcoming: 0, nextDate: null };
 };
+
+/** Everyone whose retirement date falls in `year`, sorted by department (admins only). */
+export const getRetirementsByYear = async (year) => {
+  const res = await api.get('/employees/retirements/by-year', { params: { year } });
+  return res.data ?? { data: [], meta: { year, total: 0, generatedAt: null } };
+};

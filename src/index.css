@@ -177,6 +177,9 @@
 /* Employee biodata print sheet (EmployeePrintSheet): hidden on screen; when printing, it is the only thing on the page. */
 .print-sheet { display: none; page: biodata; font-family: ui-sans-serif, system-ui, sans-serif, "Segoe UI Symbol"; }
 @page biodata { size: A4; margin: 15mm; }
+/* Retirement report (RetirementReportPage): same mechanism, printed in landscape. */
+.print-sheet.print-landscape { page: landscape-report; }
+@page landscape-report { size: A4 landscape; margin: 12mm; }
 @media print {
   body:has(> .print-sheet) { background: #fff !important; }
   body:has(> .print-sheet) > :not(.print-sheet) { display: none !important; }

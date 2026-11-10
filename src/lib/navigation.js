@@ -11,6 +11,7 @@ import {
   ClipboardDocumentCheckIcon,
   ChatBubbleLeftRightIcon,
   ClockIcon,
+  PrinterIcon,
   FingerPrintIcon,
   UserCircleIcon,
   QuestionMarkCircleIcon
@@ -54,6 +55,7 @@ export const NAV_GROUPS = [
       { name: 'Staff Records', href: '/dashboard/employees', icon: IdentificationIcon, roles: ['SUPER_ADMIN', 'ADMIN', 'LGA'] },
       { name: 'Upcoming Retirements', href: '/dashboard/retirements', icon: CalendarDaysIcon, roles: ['SUPER_ADMIN', 'ADMIN'], badge: 'retiring' },
       { name: 'Retired Staff', href: '/dashboard/retired', icon: ArchiveBoxIcon, roles: ['SUPER_ADMIN', 'ADMIN'] },
+      { name: 'Retirement Report', href: '/dashboard/retirement-report', icon: PrinterIcon, roles: ['SUPER_ADMIN', 'ADMIN'] },
       { name: 'Portal Users', href: '/dashboard/admin/users', icon: UsersIcon, roles: ['SUPER_ADMIN'] }
     ]
   },
