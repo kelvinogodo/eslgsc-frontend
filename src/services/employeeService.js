@@ -60,3 +60,9 @@ export const getRetirementsByYear = async (year) => {
   const res = await api.get('/employees/retirements/by-year', { params: { year } });
   return res.data ?? { data: [], meta: { year, total: 0, generatedAt: null } };
 };
+
+/** The full staff list grouped by the local government of each person's present station (admins only). */
+export const getStaffByStationLga = async (lga) => {
+  const res = await api.get('/employees/reports/by-station-lga', { params: { lga } });
+  return res.data ?? { data: [], meta: { lga: lga ?? null, total: 0, generatedAt: null } };
+};
