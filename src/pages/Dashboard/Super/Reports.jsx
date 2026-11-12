@@ -36,13 +36,14 @@ const RETIRING_COLUMNS = [
   { label: 'Remark', width: '13%', value: (r) => REMARK[r.retirement_basis] || '' }
 ];
 
-// One group per present station, labelled with the local government it falls under. The API
-// already sorts by local government, then station, so each LGA's stations come together.
+// One group per present station. The API already sorts by local government, then station, so
+// each LGA's stations come together; the LGA name is shown once, above its first station.
 const byLgaAndStation = (rows) =>
   groupRows(rows, (r) => `${r.station_lga ? `${r.station_lga} LGA` : 'Other stations'}\u0000${r.present_station || 'Station not recorded'}`)
-    .map(([key, list]) => {
+    .map(([key, list], i, groups) => {
       const [lga, station] = key.split('\u0000');
-      return [station, list, lga];
+      const firstOfLga = i === 0 || !groups[i - 1][0].startsWith(`${lga}\u0000`);
+      return [station, list, firstOfLga ? lga : undefined];
     });
 
 /** Filters on the left, Print / Word on the right, then the report preview (or its loading/empty state). */
