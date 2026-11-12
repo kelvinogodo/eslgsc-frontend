@@ -36,6 +36,15 @@ const RETIRING_COLUMNS = [
   { label: 'Remark', width: '13%', value: (r) => REMARK[r.retirement_basis] || '' }
 ];
 
+// One group per present station, labelled with the local government it falls under. The API
+// already sorts by local government, then station, so each LGA's stations come together.
+const byLgaAndStation = (rows) =>
+  groupRows(rows, (r) => `${r.station_lga ? `${r.station_lga} LGA` : 'Other stations'}\u0000${r.present_station || 'Station not recorded'}`)
+    .map(([key, list]) => {
+      const [lga, station] = key.split('\u0000');
+      return [station, list, lga];
+    });
+
 /** Filters on the left, Print / Word on the right, then the report preview (or its loading/empty state). */
 const ReportFrame = ({ filters, title, query, rows, emptyTitle, emptyDescription, children }) => {
   const doc = useRef(null);
@@ -103,11 +112,12 @@ const StaffByLgaReport = () => {
         <ReportDocument
           ref={ref}
           title="Staff List by Local Government"
-          subtitle={`${lga ? (lga === '__other__' ? 'Other stations' : `${lga} Local Government`) : 'All local governments'}, grouped by the local government of each person’s present station`}
+          subtitle={`${lga ? (lga === '__other__' ? 'Other stations' : `${lga} Local Government`) : 'All local governments'}, by present station (each station starts on a new page)`}
           generatedAt={query.data?.meta?.generatedAt}
           total={rows.length}
           columns={STAFF_COLUMNS}
-          groups={groupRows(rows, (r) => (r.station_lga ? `${r.station_lga} LGA` : 'Other stations'))}
+          groups={byLgaAndStation(rows)}
+          newPagePerGroup
         />
       )}
     </ReportFrame>

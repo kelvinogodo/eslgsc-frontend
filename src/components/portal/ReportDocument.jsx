@@ -33,9 +33,10 @@ const td = { verticalAlign: 'top', padding: '3px 4px', borderBottom: '1px solid 
 
 /**
  * columns: [{ label, width, value: (row) => text }]; S/N is added automatically and restarts in each group.
- * groups: [[heading, rows]]
+ * groups: [[heading, rows, kicker?]] — kicker is an optional bold line above the heading (e.g. the LGA).
+ * newPagePerGroup: start every group after the first on a new printed page.
  */
-const ReportDocument = forwardRef(({ title, subtitle, generatedAt, total, columns, groups }, ref) => (
+const ReportDocument = forwardRef(({ title, subtitle, generatedAt, total, columns, groups, newPagePerGroup }, ref) => (
   <div ref={ref} style={{ fontFamily: FONT, color: '#000', fontSize: '10.5pt', lineHeight: 1.3 }}>
     <h1 style={{ fontFamily: FONT, fontSize: '28pt', fontWeight: 400, margin: '0 0 2pt' }}>{title}</h1>
     {subtitle && <p style={{ fontSize: '12pt', margin: '0 0 6pt' }}>{subtitle}</p>}
@@ -43,9 +44,17 @@ const ReportDocument = forwardRef(({ title, subtitle, generatedAt, total, column
       Generated: {generatedStamp(generatedAt)} &nbsp;|&nbsp; Total: {total}
     </p>
 
-    {groups.map(([heading, list]) => (
-      <div key={heading} style={{ marginBottom: '14pt' }}>
-        <h2 style={{ fontFamily: FONT, fontSize: '16pt', fontWeight: 400, color: '#2e74b5', margin: '10pt 0 4pt', pageBreakAfter: 'avoid', breakAfter: 'avoid' }}>
+    {groups.map(([heading, list, kicker], g) => {
+      // Set on the group's first line (not a wrapping div) because Word only honours page breaks on paragraphs.
+      const pageBreak = newPagePerGroup && g > 0 ? { pageBreakBefore: 'always', breakBefore: 'page' } : {};
+      return (
+      <div key={`${kicker || ''}|${heading}`} style={{ marginBottom: '14pt' }}>
+        {kicker && (
+          <p style={{ fontFamily: FONT, fontSize: '20pt', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5pt', margin: '0 0 2pt', pageBreakAfter: 'avoid', breakAfter: 'avoid', ...pageBreak }}>
+            {kicker}
+          </p>
+        )}
+        <h2 style={{ fontFamily: FONT, fontSize: '16pt', fontWeight: 400, color: '#2e74b5', margin: kicker ? '0 0 4pt' : '10pt 0 4pt', pageBreakAfter: 'avoid', breakAfter: 'avoid', ...(kicker ? {} : pageBreak) }}>
           {heading}&nbsp; ({list.length})
         </h2>
         <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed', fontSize: '10pt' }}>
@@ -69,7 +78,8 @@ const ReportDocument = forwardRef(({ title, subtitle, generatedAt, total, column
           </tbody>
         </table>
       </div>
-    ))}
+      );
+    })}
   </div>
 ));
 
